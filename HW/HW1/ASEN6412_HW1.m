@@ -3,44 +3,34 @@
     Simulate the rolling of two fair dice to estimate P(x+y = 7), where
     x and y are two i.i.d dies
 %}
-%% TODO - replace n with a logspace and go out longer
-n = [50,100, 1000, 10000];
+rng(1000);
 
-nRuns = numel(n);
+maxTrials = 1E6;
+n = (1:maxTrials)';
+
+strideLength = 10;
 
 targetSum = 7;
+actualProb = 1/6;
 dieMax = 6;
 nDies = 2;
 
-probOfTargetSum = zeros(nRuns,1);
-
 % Run Simulation
-runCounter = 1;
-
-%% TODO - change this loop to just simulate once and then truncate the
-% results.... to plot different n
-
-for nCurrent = n
-    % Toss the Die
-    dieTosses = unidrnd(dieMax, nCurrent, nDies);
-    dieSum = sum(dieTosses, 2);
-    
-    % Number matching target
-    nMatchingTargetSum = sum(dieSum == targetSum);
-
-    % Results
-    probOfTargetSum(runCounter) = nMatchingTargetSum / nCurrent;
-
-    runCounter = runCounter + 1;    
-end
+dieTosses = unidrnd(dieMax, maxTrials, nDies);
+dieSum = sum(dieTosses, 2);
+ 
+nMatchingTargetSum = cumsum(dieSum == targetSum);
+probOfTargetSum = nMatchingTargetSum ./ n; 
 
 % Plot
 figure('Name','HW1 - Q1');
+semilogx(n, probOfTargetSum);
 hold on;
-plot(n, probOfTargetSum);
-yline(1/6, 'r--');
-legend('Simulation Results','True Probability')
+semilogx([1,maxTrials], [actualProb, actualProb], 'r--');
+legend('Simulation Results',sprintf('True Probability'))
 grid on;
 xlabel('Number of Trials');
-ylabel(sprintf('P(x = %d', targetSum));
-title('Probability of Seeing A Sum of %d When Rolling Two Fair Dice vs Trials');
+ylabel(sprintf('P(X = %d)', targetSum));
+title(sprintf(...
+    'Probability of Seeing A Sum of %d When Rolling Two Fair Dice vs Number of Trials',...
+    targetSum));
