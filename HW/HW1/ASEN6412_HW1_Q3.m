@@ -18,4 +18,7 @@ histogram(Y, 'Normalization','pdf');
 hold on;
 plot(y, pdfY);
 
+%% Testing Part D
+rhoXY = corrcoef(X,Y);
+
 
