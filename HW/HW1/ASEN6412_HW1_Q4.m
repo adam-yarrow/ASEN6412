@@ -35,3 +35,33 @@ title('pdf');
 
 
 % CDF
+
+% Part d
+dz = 0.01;
+Z = -1:dz:3;
+nZ = numel(Z);
+
+fZ = zeros(nZ,1);
+
+
+
+for i = 1:nZ
+    z = Z(i);
+    if z <= 1 & z >= 0
+        fZ(i) = z*(2-z);
+    elseif z > 1 & z <=2
+        fZ(i) = (z-2)^2;
+    end    
+end
+
+FZ = cumsum(fZ*dz);
+
+figure();
+subplot(1,2,1);
+plot(Z, fZ);
+title('pdf');
+
+subplot(1,2,2);
+plot(Z, FZ);
+title('cdf');
+
