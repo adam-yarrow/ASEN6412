@@ -34,16 +34,13 @@ grid on;
 title('pdf');
 
 
-% CDF
 
-% Part d
+%% Part d
 dz = 0.01;
 Z = -1:dz:3;
 nZ = numel(Z);
 
 fZ = zeros(nZ,1);
-
-
 
 for i = 1:nZ
     z = Z(i);
@@ -56,12 +53,25 @@ end
 
 FZ = cumsum(fZ*dz);
 
-figure();
+
+% Checking pdf
+Npoints = 10^5;
+Y_RV = rand(Npoints,1); % Uniform random
+xRV_draws = rand(Npoints,1);
+X_RV = 1 - (1 - xRV_draws).^0.5; % inverse CDF distribution
+
+Z_True = Y_RV + X_RV;
+
+figure('Name','Q4 - Part D');
 subplot(1,2,1);
 plot(Z, fZ);
+hold on;
+histogram(Z_True,'Normalization','pdf');
 title('pdf');
 
 subplot(1,2,2);
 plot(Z, FZ);
 title('cdf');
+
+
 
