@@ -1,35 +1,9 @@
-% x1 = 1;
-% x2 = 0:0.001:10;
-% 
-% Fx2_Given_X1 = 1 - (1+x2).*exp(-x2.*(1+x1));
-% 
-% figure();
-% plot(x2, Fx2_Given_X1);
-% 
-% 
-% %% Testing domain of Wk
-% x1 = 0:0.1:1;
-% dz2 = 0.001;
-% z2 = 0:dz2:1-dz2;
-% 
-% [X1, Z2] = meshgrid(x1,z2);
-% 
-% a = log(1-Z2) - (1+X1);
-% Z = -(1+X1).*exp(a);
-% 
-% figure();
-% plot3(X1,Z2,Z);
-% xlabel('X1')
-% ylabel('Z2');
-% grid on;
-
-
 %{
     This script generates samples of X1 and X2 according to the joint
     probability distribution function for Q3 of HW2. It then plots the
     histograms of the samples and compares to the true CDF and pdf results.
 %}
-rng(121246554)
+rng(121246554);
 
 %% Generating Samples Via Inverse Method
 Nsamples = 1E6; % Number of samples to draw
@@ -49,6 +23,8 @@ x1_true = 0:dx:10;
 x2_true = 0:dx:10;
 [X1_true, X2_true] = meshgrid(x1_true, x2_true);
 
+% Analytical Solution for E[X1X2]
+E_X1X2_Analytical = exp(1)*expint(1);
 
 % Estimate density of samples
 x = [x1', x2'];
@@ -57,15 +33,21 @@ xi = [X1_true(:), X2_true(:)];
 xCentres = xEdges(1:end-1) + (xEdges(2:end) - xEdges(1:end-1))./2;
 yCentres = yEdges(1:end-1) + (yEdges(2:end) - yEdges(1:end-1))./2;
 [XCentres, YCentres] = meshgrid(xCentres,yCentres);
-% fXEst = ksdensity(x,xi,'Bandwidth',0.1); %% Kinda works but is bad
 
-% Plotting
+% Statistics Extraction
+mu1 = mean(x1);
+mu2 = mean(x2);
+
+cov12 = cov(x1,x2);
+E_X1X2 = cov12(1,2) + mu1*mu2; % Adding product of means back to get cross moment
+
+
+%% Plotting
+% Plotting - Density
 figure('Name','HW2 - Q3 - Joint PDF');
 hold on;
 surf(X1_true, X2_true, f_X2_X1(X1_true, X2_true),'EdgeColor','none');
-% plot3(xi(:,1), xi(:,2), fXEst,'r*');
-plot3(XCentres, YCentres, fXEst_Hist,'r*');
-% histogram2(x1,x2,'Normalization','pdf')
+plot3(XCentres, YCentres, fXEst_Hist,'r.');
 grid on;
 legend('Analytical','Inverse Method - Histogram')
 xlabel('X1');
@@ -75,15 +57,37 @@ title('Joint pdf - Analytical vs Sampled');
 xlim([min(x1_true), max(x1_true)]);
 ylim([min(x2_true), max(x2_true)]);
 
+% Plotting Moments vs Time
+n = 1:Nsamples;
+mu1_vsN = cumsum(x1,2) ./ n;
+mu2_vsN = cumsum(x2,2) ./ n;
+E_X1X2_vsN = cumsum(x1.*x2,2) ./ n;
 
-% Statistic Extraction
-mu1 = mean(x1);
-mu2 = mean(x2);
+figure('Name','HW2 - Q3 - Moments vs Number of Samples')
+subplot(2,1,1);
+semilogx(n, mu1_vsN,'r');
+hold on;
+semilogx(n, mu2_vsN,'b');
+semilogx([1, Nsamples],[1 1],'k--');
+legend('\mu_1','\mu_2','Analytical Solution');
+xlabel('Number of Samples');
+ylabel('Running Mean');
+grid on;
+title('Mean vs Number of Samples for X_1 and X_2')
 
-cov12 = cov(x1,x2);
-E_X1X2 = cov12(1,2) + mu1*mu2; % Adding product of means back to get cross moment
+subplot(2,1,2);
+semilogx(n, E_X1X2_vsN,'r');
+hold on;
+semilogx([1, Nsamples],[E_X1X2_Analytical E_X1X2_Analytical],'k--');
+legend('E[X_1X_2]','Analytical Solution');
+xlabel('Number of Samples');
+ylabel('Running E[X_1X_2]');
+grid on;
+title('E[X_1X_2] vs Number of Samples')
 
 
+
+%% Helper Functions
 % Marginal CDF of X1
 function c = F_X1(x1)
     c = 1 - exp(-x1);
