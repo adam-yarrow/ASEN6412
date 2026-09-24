@@ -29,8 +29,10 @@
     probability distribution function for Q3 of HW2. It then plots the
     histograms of the samples and compares to the true CDF and pdf results.
 %}
+rng(121246554)
+
 %% Generating Samples Via Inverse Method
-Nsamples = 1E5; % Number of samples to draw
+Nsamples = 1E6; % Number of samples to draw
 
 % Generate IID Uniform z = [z1, z2]^T
 z = rand(2,Nsamples);
@@ -42,26 +44,36 @@ x1 = Finv_X1(z(1,:));
 x2 = Finv_X2givenX1(x1, z(2,:));
 
 % Truth Joint PDF
-x1_true = 0:0.01:5;
-x2_true = 0:0.01:10;
+dx = 0.1;
+x1_true = 0:dx:10;
+x2_true = 0:dx:10;
 [X1_true, X2_true] = meshgrid(x1_true, x2_true);
 
 
 % Estimate density of samples
-%% TODO - follow example here
-% [fXEst, xEst] = ksdensity(xInv,xGridEst,'Bandwidth',0.001);
+x = [x1', x2'];
+xi = [X1_true(:), X2_true(:)];
+[fXEst_Hist, xEdges, yEdges] = histcounts2(x1,x2,'Normalization','pdf');
+xCentres = xEdges(1:end-1) + (xEdges(2:end) - xEdges(1:end-1))./2;
+yCentres = yEdges(1:end-1) + (yEdges(2:end) - yEdges(1:end-1))./2;
+[XCentres, YCentres] = meshgrid(xCentres,yCentres);
+% fXEst = ksdensity(x,xi,'Bandwidth',0.1); %% Kinda works but is bad
 
 % Plotting
 figure('Name','HW2 - Q3 - Joint PDF');
 hold on;
 surf(X1_true, X2_true, f_X2_X1(X1_true, X2_true),'EdgeColor','none');
+% plot3(xi(:,1), xi(:,2), fXEst,'r*');
+plot3(XCentres, YCentres, fXEst_Hist,'r*');
 % histogram2(x1,x2,'Normalization','pdf')
 grid on;
-legend('Analytical','Inverse Method')
+legend('Analytical','Inverse Method - Histogram')
 xlabel('X1');
 ylabel('X2');
 zlabel('f_{X1,X2}');
 title('Joint pdf - Analytical vs Sampled');
+xlim([min(x1_true), max(x1_true)]);
+ylim([min(x2_true), max(x2_true)]);
 
 
 % Statistic Extraction
