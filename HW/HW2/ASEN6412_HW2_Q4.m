@@ -2,11 +2,16 @@
     TODO - README
 %}
 
+%% Parameters - Part A
+a = 0.5;
+l = 2;
+sigma = 2;
+truncError = 0.1;
+
+
 %% Testing
 % Check root finding
 omega = 0:0.001:20;
-a = 0.5;
-l = 2;
 
 omegaSol_odd = [];
 omegaSol_Even = [];
@@ -36,3 +41,18 @@ legend('tan','odd','even','solutions');
 ylim([-60,20]);
 grid on;
 
+
+%% Testing Lambda i for our problem
+maxI = 20;
+omega = NaN(maxI,1);
+lambda = NaN(maxI,1);
+for i = 1:maxI
+    omega(i) = getOmegaKLE(i,a,l);
+    lambda(i) = getLambdaKLE(l,omega(i),sigma);
+end
+
+figure();
+plot(lambda);
+xlabel('i');
+ylabel('lambda_i');
+grid on;
