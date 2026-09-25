@@ -2,11 +2,58 @@
     TODO - README
 %}
 
-%% Parameters - Part A
+rng(8008135);
+
+%% General Parameters
+meanG = 1.0;
+
+
+%% Part A
+% Parameters
+warning('Fix these parameters after testing');
 a = 0.5;
-l = 2;
-sigma = 2;
-truncError = 0.1;
+l = 1.0; % 2;
+sigma = 1; %2;
+truncErrorMSE = 0.1; % 10% truncation error allowed
+
+% Compute Number of terms for G(x,w) truncation
+lambdaOptions = struct();
+lambdaOptions.mode = 'approximate';
+lambdaOptions.k = 10; % Assuming 10 eigenvalues beyond current eval adequate
+lambdaOptions.maxIts = 100;
+lambdaOptions.fPlot = true;
+
+[d_PartA, lambda_PartA, omega_PartA] = findMinNumLambdaKLE(truncErrorMSE, ...
+                                            a, l, sigma, lambdaOptions);
+% Plotting Eigenfunctions
+nModesToPlot = 2;
+fPlotScaled = false;
+plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaled)
+
+
+% Plot 3 independent realisations of G(x,w) from Truncation
+dx = 0.001;
+x = 0:dx:1;
+
+nInstances = 3;
+
+Y = randn(d_PartA, nInstances);
+
+
+
+%% TODO
+
+
+% Draw samples of G(x,w) and compute sample mean and variance vs x
+%% TODO
+
+
+%% Part B - TODO
+
+
+
+
+
 
 %% Testing
 % Check root finding
@@ -76,3 +123,5 @@ lambdaOptions.fPlot = true;
 
 mseThreshold = 0.1;
 [d, lambdaTrunc, omegaTrunc] = findMinNumLambdaKLE(mseThreshold, a, l, sigma, lambdaOptions);
+
+
