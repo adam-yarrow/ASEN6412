@@ -34,8 +34,21 @@ else
     methodName = funCallStack(1).name;
     error('Invalid mode provided for function: %s', methodName);
 end   
+
+% Plotting
+if options.fPlot
+    figure('Name','Eigenvalues for Exponential Covariance Function');
+    plot(1:numel(lambda), lambda ./ sum(lambda),'r*');
+    grid on;
+    xlabel('i')
+    txt = '$\lambda_i $ / $ \sum_{j=1}^{k}\lambda_j$';
+    ylabel(txt,'Interpreter','latex');
+    title('Normalized Eigenvalues vs Mode Number')
+end
 end
 
+
+%% Helpers
 function [d, lambda, omega] = approxSol(alpha, a, l, sigma, options)
 truncErrorFrac = 0;
 lambda = [];
@@ -76,8 +89,8 @@ while truncErrorFrac < alpha
 end
 
 d = i - 1;
-lambda = lambda(1:d);
-omega = omega(1:d);
+% lambda = lambda(1:d);
+% omega = omega(1:d);
 end
 
 function [d, lambda, omega] = analyticalSol(alpha, a, l, sigma, options)

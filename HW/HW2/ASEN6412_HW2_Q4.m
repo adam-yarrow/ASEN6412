@@ -72,6 +72,7 @@ lambdaOptions.mode = 'approximate';
 lambdaOptions.k = 10;
 % lambdaOptions.MSE = 4;
 lambdaOptions.maxIts = 100;
+lambdaOptions.fPlot = true;
 
 mseThreshold = 0.1;
 [d, lambdaTrunc, omegaTrunc] = findMinNumLambdaKLE(mseThreshold, a, l, sigma, lambdaOptions);
