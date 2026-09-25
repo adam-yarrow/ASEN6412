@@ -26,7 +26,7 @@ lambdaOptions.fPlot = true;
 [d_PartA, lambda_PartA, omega_PartA] = findMinNumLambdaKLE(truncErrorMSE, ...
                                             a, l, sigma, lambdaOptions);
 % Plotting Eigenfunctions
-nModesToPlot = 2;
+nModesToPlot = 4;
 fPlotScaled = false;
 plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaled)
 

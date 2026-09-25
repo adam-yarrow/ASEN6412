@@ -14,9 +14,9 @@ function [phi] = evalEigenfunctionKLE(omega_i, a, i, t)
 
     commonFactor = sin(2*omega_i.*a) ./ (2*omega_i);
     if isEven(i)
-        phi = @(t) sin(omega_i.*t) ./ (a + commonFactor).^0.5;       
+        phi = @(t) sin(omega_i.*t) ./ (a - commonFactor).^0.5;       
     else
-        phi = @(t) cos(omega_i.*t) ./ (a - commonFactor).^0.5;
+        phi = @(t) cos(omega_i.*t) ./ (a + commonFactor).^0.5;
     end
 
     if fReturnValue
