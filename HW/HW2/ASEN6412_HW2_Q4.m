@@ -65,3 +65,13 @@ plot(lambdaI);
 xlabel('i');
 ylabel('lambda_i');
 grid on;
+
+%% Testing Minimum d for Lambda
+lambdaOptions = struct();
+lambdaOptions.mode = 'approximate';
+lambdaOptions.k = 10;
+% lambdaOptions.MSE = 4;
+lambdaOptions.maxIts = 100;
+
+mseThreshold = 0.1;
+[d, lambdaTrunc, omegaTrunc] = findMinNumLambdaKLE(mseThreshold, a, l, sigma, lambdaOptions);

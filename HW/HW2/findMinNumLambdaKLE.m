@@ -21,42 +21,93 @@ function [d, lambda, omega] = findMinNumLambdaKLE(mseThreshold, a, l, sigma, opt
 %}
 
 alpha = 1 - mseThreshold;
+mode = options.mode;
+
+
+% Analytical Approach
+if strcmpi('analytical',mode)
+    [d, lambda, omega] = analyticalSol(alpha, a, l, sigma, options);
+elseif strcmpi('approximate',mode)
+    [d, lambda, omega] = approxSol(alpha, a, l, sigma, options);
+else
+    funCallStack = dbstack;
+    methodName = funCallStack(1).name;
+    error('Invalid mode provided for function: %s', methodName);
+end   
+end
+
+function [d, lambda, omega] = approxSol(alpha, a, l, sigma, options)
+truncErrorFrac = 0;
+lambda = [];
+omega = [];
+i = 1;
+
+lambdaSum = 0;
+lambdaSumExtended = 0;
+
+while truncErrorFrac < alpha
+        
+    if i == 1
+        for j = 1:options.k + 1
+            omega_j = getOmegaKLE(j,a,l);
+            lambda_j = getLambdaKLE(l,omega_j,sigma);
+            lambda = [lambda, lambda_j];
+            omega = [omega, omega_j];
+
+            lambdaSumExtended = lambdaSumExtended + lambda_j;
+            if j == 1
+                lambdaSum = lambdaSum + lambda_j;
+            end
+        end
+    else
+        % only add the next in the series (e.g. i + k)
+        omega_j = getOmegaKLE(i+options.k,a,l);
+        lambda_j = getLambdaKLE(l,omega_j,sigma);
+
+        lambda = [lambda, lambda_j];
+        omega = [omega, omega_j];
+
+        lambdaSumExtended = lambdaSumExtended + lambda_j;
+        lambdaSum = lambdaSum + lambda(i);
+    end
+
+    truncErrorFrac = lambdaSum / lambdaSumExtended;
+    i = i + 1;
+end
+
+d = i - 1;
+lambda = lambda(1:d);
+omega = omega(1:d);
+end
+
+function [d, lambda, omega] = analyticalSol(alpha, a, l, sigma, options)
 truncErrorFrac = 0;
 i = 1;
-d = 0;
 
 lambda = [];
 omega = [];
 
 lambdaSum = 0;
-
-mode = options.mode;
-
 % Iterate until meet threshold
-while truncErrorFrac < alpha
+while (truncErrorFrac < alpha)
+    omega_i = getOmegaKLE(i,a,l);
+    lambda_i = getLambdaKLE(l,omega_i,sigma);
+    lambdaSum = lambdaSum + lambda_i;
 
-    % Analytical Approach
-    if strcmpi('analytical',mode)
-        omega_i = getOmegaKLE(i,a,l);
-        lambda_i = getLambdaKLE(l,omega_i,sigma);
-        lambdaSum = lambdaSum + lambda_i;
+    truncErrorFrac = lambdaSum / options.MSE;
+       
+    lambda = [lambda, lambda_i];
+    omega = [omega, omega_i];
     
-        truncErrorFrac = lambdaSum / options.MSE;
-           
-        lambda = [lambda, lambda_i];
-        omega = [omega, omega_i];
-        d = i;
-    else
-
-    end
-    
-
     i = i+1;
 
+    % Break if exceed max its
+    if i > options.maxIts
+        error('Could not converge to valid minimum d')
+    end
+end
+
+d = i -1;
 end
 
 
- 
-
-
-end
