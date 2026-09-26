@@ -2,18 +2,23 @@
     TODO - README
 %}
 
-rng(8008135);
+rng(8008135); % lol random
 
 %% General Parameters
-meanG = 1.0;
-
+sigma = 2;
+muG = 1;
+meanGFunc = @(t) muG * ones(size(t)); % Constant mean w.r.t. time
+varG = sigma^2;
+xMax = 1;
+xMin = 0;
+dx = 0.001;
+x = xMin:dx:xMax;
+nX = numel(x);
 
 %% Part A
 % Parameters
-warning('Fix these parameters after testing');
 a = 0.5;
-l = 1.0; % 2;
-sigma = 1; %2;
+l = 2;
 truncErrorMSE = 0.1; % 10% truncation error allowed
 
 % Compute Number of terms for G(x,w) truncation
@@ -27,29 +32,70 @@ lambdaOptions.fPlot = true;
                                             a, l, sigma, lambdaOptions);
 % Plotting Eigenfunctions
 nModesToPlot = 4;
-fPlotScaled = false;
-plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaled)
-
+fPlotScaledWithLambda = false;
+plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaledWithLambda)
 
 % Plot 3 independent realisations of G(x,w) from Truncation
-dx = 0.001;
-x = 0:dx:1;
-
 nInstances = 3;
-
 Y = randn(d_PartA, nInstances);
 
+Gd = cell(nInstances, 1); % Distribution approximation instantiations
 
-
-%% TODO
+figure('Name','Part A - Plotting Independent Realizations of G');
+hold on;
+for i = 1:nInstances
+    Gd{i} = KLE_Instance(Y(:,i), lambda_PartA, omega_PartA, meanGFunc, a);
+    gd_vs_x = Gd{i}.getRV(x);
+    plot(x, gd_vs_x, 'DisplayName',sprintf('\\omega_{%i}', i))
+end
+grid on;
+xlabel('x')
+ylabel('G(x,\omega)','Interpreter','tex');
+legend();
+title('Three Realizations of G(x,\omega) vs x','Interpreter','tex');
 
 
 % Draw samples of G(x,w) and compute sample mean and variance vs x
-%% TODO
+nInstances = 1E6;
+Ylarge = randn(d_PartA, nInstances);
+
+Gd_large = cell(nInstances, 1); % Distribution approximation instantiations
+gd_large = NaN(nInstances, nX);
+
+for i = 1:nInstances
+    Gd_large{i} = KLE_Instance(Ylarge(:,i), lambda_PartA, omega_PartA, meanGFunc, a);
+    gd_large(i,:) = Gd_large{i}.getRV(x);
+end
+
+meanG_sampled = mean(gd_large,1);
+varG_sampled = var(gd_large,1);
+
+figure('Name','Sample Moments vs x'); 
+subplot(2,1,1);
+plot(x, meanG_sampled);
+hold on;
+yline(muG,'r--');
+legend('Samples','True Value');
+xlabel('x');
+ylabel('E[G]');
+title('Mean of G(x,\omega) vs Position','Interpreter','tex');
+grid on;
+
+subplot(2,1,2);
+hold on;
+plot(x, varG_sampled);
+yline(varG,'r--');
+legend('Samples','True Value');
+xlabel('x');
+ylabel('Var(G)');
+title('Variance of G(x,\omega) vs Position','Interpreter','tex');
+grid on;
+ylim([min(varG_sampled), 4.25]);
+
+
 
 
 %% Part B - TODO
-
 
 
 

@@ -20,7 +20,7 @@ classdef KLE_Instance < handle
                 % function of time or space
         a; % half domain of eigenfunction (e.g. -a < t_tilde < a)
         d; % Truncation order
-        phiSqrtLambdaVector; % A vector of phi functions scaled by 
+        phiVector; % A vector of phi functions scaled by 
                             % sqrt(lambda) (dx1)
 
     end
@@ -36,16 +36,16 @@ classdef KLE_Instance < handle
 
             obj.d = length(Y);
 
-            obj.phiSqrtLambdaVector = cell(obj.d,1);
+            obj.phiVector = cell(obj.d,1);
             for i = 1:obj.d
-                obj.phiSqrtLambdaVector(i) = sqrt(obj.lambda(i))* ...
-                        evalEigenfunctionKLE(obj.omega(i), obj.a, i);
+                obj.phiVector{i} = evalEigenfunctionKLE(obj.omega(i), ...
+                                        obj.a, i);
             end
         end
 
-        function x = getX(obj,t)
+        function x = getRV(obj,t)
             %{
-                Returns the value of the stochastic process at
+                Returns the random value of the stochastic process at
                 location/time t.
 
                 Performing the operation x(t) = <X(t)> +
@@ -59,7 +59,7 @@ classdef KLE_Instance < handle
             % TODO - try to make this into a vector operation??? e.g. inner
             % product
             for i = 1:obj.d
-                x = x + obj.phiSqrtLambdaVector{i}(tTilde)*obj.Y(i);
+                x = x + sqrt(obj.lambda(i)).*obj.phiVector{i}(tTilde).*obj.Y(i);
             end
 
         end
