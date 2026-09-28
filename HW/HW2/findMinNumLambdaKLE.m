@@ -38,12 +38,12 @@ end
 % Plotting
 if options.fPlot
     figure('Name','Eigenvalues for Exponential Covariance Function');
-    plot(1:numel(lambda), lambda ./ sum(lambda),'r*');
+    plot(1:numel(lambda), lambda ./ sum(lambda),'r*','MarkerSize',8);
     grid on;
-    xlabel('i')
+    xlabel('i','FontSize',14)
     txt = '$\lambda_i $ / $ \sum_{j=1}^{k}\lambda_j$';
-    ylabel(txt,'Interpreter','latex');
-    title('Normalized Eigenvalues vs Mode Number')
+    ylabel(txt,'Interpreter','latex','FontSize',14);
+    title('Normalized Eigenvalues vs Mode Number','FontSize',14)
 end
 end
 
@@ -89,8 +89,6 @@ while truncErrorFrac < alpha
 end
 
 d = i - 1;
-% lambda = lambda(1:d);
-% omega = omega(1:d);
 end
 
 function [d, lambda, omega] = analyticalSol(alpha, a, l, sigma, options)

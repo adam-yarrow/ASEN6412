@@ -4,30 +4,35 @@
 
 rng(8008135); % lol random
 
-%% General Parameters
+%% Common Parameters
+% G(x,w) params
 sigma = 2;
 muG = 1;
 meanGFunc = @(t) muG * ones(size(t)); % Constant mean w.r.t. time
 varG = sigma^2;
+
+% Support
 xMax = 1;
 xMin = 0;
 dx = 0.001;
-x = xMin:dx:xMax;
+x = (xMin:dx:xMax)';
 nX = numel(x);
 
-%% Part A
-% Parameters
-a = 0.5;
-l = 2;
-truncErrorMSE = 0.1; % 10% truncation error allowed
-
-% Compute Number of terms for G(x,w) truncation
+% KLE Options/Parameters
 lambdaOptions = struct();
 lambdaOptions.mode = 'approximate';
 lambdaOptions.k = 10; % Assuming 10 eigenvalues beyond current eval adequate
 lambdaOptions.maxIts = 100;
 lambdaOptions.fPlot = true;
 
+truncErrorMSE = 0.1; % 10% truncation error allowed
+a = 0.5;
+
+%% Part A
+% Parameters
+l = 2;
+
+% Compute Number of terms for G(x,w) truncation
 [d_PartA, lambda_PartA, omega_PartA] = findMinNumLambdaKLE(truncErrorMSE, ...
                                             a, l, sigma, lambdaOptions);
 % Plotting Eigenfunctions
@@ -38,65 +43,73 @@ plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaledWithLa
 % Plot 3 independent realisations of G(x,w) from Truncation
 nInstances = 3;
 Y = randn(d_PartA, nInstances);
+dataKLE_PartA = generateKLE_Struct(lambda_PartA, omega_PartA, meanGFunc, a, d_PartA);
+gd_vs_x = getRV_KLE(x, dataKLE_PartA, Y);
 
-Gd = cell(nInstances, 1); % Distribution approximation instantiations
-
-figure('Name','Part A - Plotting Independent Realizations of G');
-hold on;
-for i = 1:nInstances
-    Gd{i} = KLE_Instance(Y(:,i), lambda_PartA, omega_PartA, meanGFunc, a);
-    gd_vs_x = Gd{i}.getRV(x);
-    plot(x, gd_vs_x, 'DisplayName',sprintf('\\omega_{%i}', i))
-end
-grid on;
-xlabel('x')
-ylabel('G(x,\omega)','Interpreter','tex');
-legend();
-title('Three Realizations of G(x,\omega) vs x','Interpreter','tex');
+plotIndependentRealisations("Part A - l=2", x, gd_vs_x);
 
 
 % Draw samples of G(x,w) and compute sample mean and variance vs x
 nInstances = 1E6;
 Ylarge = randn(d_PartA, nInstances);
+gd_large = getRV_KLE(x, dataKLE_PartA, Ylarge);
 
-Gd_large = cell(nInstances, 1); % Distribution approximation instantiations
-gd_large = NaN(nInstances, nX);
-
-for i = 1:nInstances
-    Gd_large{i} = KLE_Instance(Ylarge(:,i), lambda_PartA, omega_PartA, meanGFunc, a);
-    gd_large(i,:) = Gd_large{i}.getRV(x);
-end
-
-meanG_sampled = mean(gd_large,1);
-varG_sampled = var(gd_large,1);
+meanG_sampled = mean(gd_large,2);
+varG_sampled = var(gd_large,0,2);
 
 figure('Name','Sample Moments vs x'); 
 subplot(2,1,1);
-plot(x, meanG_sampled);
+plot(x, meanG_sampled,'LineWidth',2);
 hold on;
-yline(muG,'r--');
+yline(muG,'r--','LineWidth',2);
 legend('Samples','True Value');
-xlabel('x');
-ylabel('E[G]');
-title('Mean of G(x,\omega) vs Position','Interpreter','tex');
+xlabel('x','FontSize',14);
+ylabel('E[G]','FontSize',14);
+title('Mean of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
 grid on;
 
 subplot(2,1,2);
 hold on;
-plot(x, varG_sampled);
-yline(varG,'r--');
+plot(x, varG_sampled,'LineWidth',2);
+yline(varG,'r--','LineWidth',2);
 legend('Samples','True Value');
-xlabel('x');
-ylabel('Var(G)');
-title('Variance of G(x,\omega) vs Position','Interpreter','tex');
+xlabel('x','FontSize',14);
+ylabel('Var(G)','FontSize',14);
+title('Variance of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
 grid on;
 ylim([min(varG_sampled), 4.25]);
 
 
 
+%% Part B 
+% Parameters
+l_PartB = 0.2;
 
-%% Part B - TODO
+% Compute Number of terms for G(x,w) truncation
+[d_PartB, lambda_PartB, omega_PartB] = findMinNumLambdaKLE(truncErrorMSE, ...
+                                            a, l_PartB, sigma, lambdaOptions);
+% Plotting instances
+nInstances = 3;
+Yb = randn(d_PartB, nInstances);
+dataKLE_PartB = generateKLE_Struct(lambda_PartB, omega_PartB, meanGFunc, a, d_PartB);
+gd_vs_x_PartB = getRV_KLE(x, dataKLE_PartB, Yb);
 
+plotIndependentRealisations("Part B - l=0.2", x, gd_vs_x_PartB);
+
+
+%% Helper Functions
+function plotIndependentRealisations(partName, x, gd_vs_x)
+    figure('Name',sprintf('%s - Plotting Independent Realizations of G',partName));
+    hold on;
+    for i = 1:size(gd_vs_x,2)    
+        plot(x, gd_vs_x(:,i), 'DisplayName',sprintf('\\omega_{%i}', i),'LineWidth',2)
+    end
+    grid on;
+    xlabel('x','FontSize',14)
+    ylabel('G(x,\omega)','Interpreter','tex','FontSize',14);
+    legend();
+    title([partName,' Three Realizations of G(x,\omega) vs x'],'Interpreter','tex','FontSize',14);
+end
 
 
 
