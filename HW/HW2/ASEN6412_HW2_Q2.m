@@ -7,6 +7,7 @@
 nSamples = 10000;
 
 %% Inversion Method
+%% 
 rng(100); % Fix seed for repeatability
 u = rand(nSamples,1);
 xInv = Finv(u);
@@ -27,23 +28,23 @@ cdfTrue = FX(xGrid);
 %% Plotting
 figure('Name','HW2 - Q2 - PDF'); 
 hold on;
-plot(xGrid, pdfTrue);
-plot(xEst, fXEst);
+plot(xGrid, pdfTrue,'LineWidth',2);
+plot(xEst, fXEst,'LineWidth',1);
 grid on;
-xlabel('x');
-ylabel('f_X(x)');
-legend('True pdf','Inverse Method')
-title('pdf - Drawing from pdf via Inversion Method')
+xlabel('x','FontSize',14);
+ylabel('f_X(x)','FontSize',14);
+legend('True pdf','Inverse Method','FontSize',14)
+title('pdf - Drawing from pdf via Inversion Method','FontSize',14)
 
 figure('Name','HW2 - Q2 - CDF'); 
 hold on;
-plot(xGrid, cdfTrue);
-plot(xEst_FX, FXEst);
+plot(xGrid, cdfTrue,'LineWidth',2);
+plot(xEst_FX, FXEst,'LineWidth',2);
 grid on;
-xlabel('x');
-ylabel('F_X(x)');
-legend('True CDF','Inverse Method')
-title('CDF - Drawing from pdf via Inversion Method')
+xlabel('x','FontSize',14);
+ylabel('F_X(x)','FontSize',14);
+legend('True CDF','Inverse Method','FontSize',14)
+title('CDF - Drawing from pdf via Inversion Method','FontSize',14)
 
 
 %% Helpers
