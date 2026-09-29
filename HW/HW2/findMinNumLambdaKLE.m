@@ -35,16 +35,6 @@ else
     error('Invalid mode provided for function: %s', methodName);
 end   
 
-% Plotting
-if options.fPlot
-    figure('Name','Eigenvalues for Exponential Covariance Function');
-    plot(1:numel(lambda), lambda ./ sum(lambda),'r*','MarkerSize',8);
-    grid on;
-    xlabel('i','FontSize',14)
-    txt = '$\lambda_i $ / $ \sum_{j=1}^{k}\lambda_j$';
-    ylabel(txt,'Interpreter','latex','FontSize',14);
-    title('Normalized Eigenvalues vs Mode Number','FontSize',14)
-end
 end
 
 
@@ -89,6 +79,17 @@ while truncErrorFrac < alpha
 end
 
 d = i - 1;
+
+% Plotting
+if options.fPlot
+    figure('Name','Eigenvalues for Exponential Covariance Function');
+    plot(1:numel(lambda), lambda ./ sum(lambda),'r*','MarkerSize',8);
+    grid on;
+    xlabel('i','FontSize',14)
+    txt = '$\lambda_i $ / $ \sum_{j=1}^{k}\lambda_j$';
+    ylabel(txt,'Interpreter','latex','FontSize',14);
+    title('Normalized Eigenvalues vs Mode Number','FontSize',14)
+end
 end
 
 function [d, lambda, omega] = analyticalSol(alpha, a, l, sigma, options)
@@ -119,6 +120,17 @@ while (truncErrorFrac < alpha)
 end
 
 d = i -1;
+
+% Plotting
+if options.fPlot
+    figure('Name','Eigenvalues for Exponential Covariance Function');
+    plot(1:numel(lambda), lambda ./ options.MSE,'r*','MarkerSize',8);
+    grid on;
+    xlabel('i','FontSize',14)
+    txt = '$\lambda_i $ / $ <\int X(t,\omega) dt> $';
+    ylabel(txt,'Interpreter','latex','FontSize',14);
+    title('Normalized Eigenvalues vs Mode Number','FontSize',14)
+end
 end
 
 

@@ -1,5 +1,6 @@
 %{
-    TODO - README
+    This script solves Q4 of HW2 for ASEN6412.
+    Everything up to "%% Testing" is critical.
 %}
 
 rng(8008135); % lol random
@@ -20,8 +21,9 @@ nX = numel(x);
 
 % KLE Options/Parameters
 lambdaOptions = struct();
-lambdaOptions.mode = 'approximate';
-lambdaOptions.k = 10; % Assuming 10 eigenvalues beyond current eval adequate
+lambdaOptions.mode = 'analytical';
+lambdaOptions.MSE = sigma^2; % Integral from 0 to 1 of <G^2>
+lambdaOptions.k = 100; % Assuming 100 eigenvalues beyond current eval adequate
 lambdaOptions.maxIts = 100;
 lambdaOptions.fPlot = true;
 
@@ -35,10 +37,13 @@ l = 2;
 % Compute Number of terms for G(x,w) truncation
 [d_PartA, lambda_PartA, omega_PartA] = findMinNumLambdaKLE(truncErrorMSE, ...
                                             a, l, sigma, lambdaOptions);
-% Plotting Eigenfunctions
-nModesToPlot = 4;
-fPlotScaledWithLambda = false;
-plotEigenFunctions(omega_PartA, lambda_PartA, a, nModesToPlot, fPlotScaledWithLambda)
+
+
+% nModesToPlot = 4;
+% fPlotScaledWithLambda = false;
+% [~, lambda, w] = findMinNumLambdaKLE(0.01, a, l, sigma, lambdaOptions);
+% plotEigenFunctions(w, lambda, a, nModesToPlot, fPlotScaledWithLambda)
+% 
 
 % Plot 3 independent realisations of G(x,w) from Truncation
 nInstances = 3;
@@ -50,7 +55,7 @@ plotIndependentRealisations("Part A - l=2", x, gd_vs_x);
 
 
 % Draw samples of G(x,w) and compute sample mean and variance vs x
-nInstances = 1E6;
+nInstances = 1E5;
 Ylarge = randn(d_PartA, nInstances);
 gd_large = getRV_KLE(x, dataKLE_PartA, Ylarge);
 
@@ -95,6 +100,12 @@ dataKLE_PartB = generateKLE_Struct(lambda_PartB, omega_PartB, meanGFunc, a, d_Pa
 gd_vs_x_PartB = getRV_KLE(x, dataKLE_PartB, Yb);
 
 plotIndependentRealisations("Part B - l=0.2", x, gd_vs_x_PartB);
+
+% Plotting Eigenfunctions
+nModesToPlot = 4;
+fPlotScaledWithLambda = false;
+plotEigenFunctions(omega_PartB, lambda_PartB, a, nModesToPlot, fPlotScaledWithLambda)
+
 
 
 %% Helper Functions
