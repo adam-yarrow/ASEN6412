@@ -1,4 +1,5 @@
 %{
+    HW2 - Q2
     This script generates samples of the Chebyshev probability density
     using the inversion method.
 %}

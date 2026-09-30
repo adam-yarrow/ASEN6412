@@ -1,4 +1,5 @@
 %{
+    HW2 - Q3
     This script generates samples of X1 and X2 according to the joint
     probability distribution function for Q3 of HW2. It then plots the
     histograms of the samples and compares to the true CDF and pdf results.
