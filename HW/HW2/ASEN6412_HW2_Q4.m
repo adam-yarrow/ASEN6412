@@ -56,35 +56,11 @@ plotIndependentRealisations("Part A - l=2", x, gd_vs_x);
 
 % Draw samples of G(x,w) and compute sample mean and variance vs x
 nInstances = 1E5;
-Ylarge = randn(d_PartA, nInstances);
-gd_large = getRV_KLE(x, dataKLE_PartA, Ylarge);
+[gd_large, meanG_sampled, varG_sampled] = plotMeanAndVariance(nInstances,...
+                                            d_PartA, x, dataKLE_PartA, ...
+                                            'Part A - l=2 - ', muG, varG);
 
-meanG_sampled = mean(gd_large,2);
-varG_sampled = var(gd_large,0,2);
-
-figure('Name','Sample Moments vs x'); 
-subplot(2,1,1);
-plot(x, meanG_sampled,'LineWidth',2);
-hold on;
-yline(muG,'r--','LineWidth',2);
-legend('Samples','True Value');
-xlabel('x','FontSize',14);
-ylabel('E[G]','FontSize',14);
-title('Mean of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
-grid on;
-
-subplot(2,1,2);
-hold on;
-plot(x, varG_sampled,'LineWidth',2);
-yline(varG,'r--','LineWidth',2);
-legend('Samples','True Value');
-xlabel('x','FontSize',14);
-ylabel('Var(G)','FontSize',14);
-title('Variance of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
-grid on;
-ylim([min(varG_sampled), 4.25]);
-
-
+MSE_PartA = sum((varG_sampled-varG)*dx)/varG*100; % Percentage
 
 %% Part B 
 % Parameters
@@ -106,7 +82,13 @@ nModesToPlot = 4;
 fPlotScaledWithLambda = false;
 plotEigenFunctions(omega_PartB, lambda_PartB, a, nModesToPlot, fPlotScaledWithLambda)
 
+% Plot mean and cov for testing
+nInstances = 1E5;
+[gd_largeB, meanG_sampledB, varG_sampledB] = plotMeanAndVariance(nInstances,...
+                                            d_PartB, x, dataKLE_PartB, ...
+                                            'Part B - l=2 - ', muG, varG);
 
+MSE_PartB = sum((varG_sampledB-varG)*dx)/varG*100; % Percentage
 
 %% Helper Functions
 function plotIndependentRealisations(partName, x, gd_vs_x)
@@ -120,6 +102,38 @@ function plotIndependentRealisations(partName, x, gd_vs_x)
     ylabel('G(x,\omega)','Interpreter','tex','FontSize',14);
     legend();
     title([partName,' Three Realizations of G(x,\omega) vs x'],'Interpreter','tex','FontSize',14);
+end
+
+
+function [gd_large, meanG_sampled, varG_sampled] = plotMeanAndVariance(nInstances, d, x, dataKLE, plotName, muG, varG)
+    Ylarge = randn(d, nInstances);
+    gd_large = getRV_KLE(x, dataKLE, Ylarge);
+    
+    meanG_sampled = mean(gd_large,2);
+    varG_sampled = var(gd_large,0,2);
+    
+    figure('Name', sprintf('%s Sample Moments vs x',plotName)); 
+    subplot(2,1,1);
+    plot(x, meanG_sampled,'LineWidth',2);
+    hold on;
+    yline(muG,'r--','LineWidth',2);
+    legend('Samples','True Value');
+    xlabel('x','FontSize',14);
+    ylabel('E[G]','FontSize',14);
+    title('Mean of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
+    grid on;
+    
+    subplot(2,1,2);
+    hold on;
+    plot(x, varG_sampled,'LineWidth',2);
+    yline(varG,'r--','LineWidth',2);
+    legend('Samples','True Value');
+    xlabel('x','FontSize',14);
+    ylabel('Var(G)','FontSize',14);
+    title('Variance of G(x,\omega) vs Position','Interpreter','tex','FontSize',14);
+    grid on;
+    ylim([min(varG_sampled), max(max(varG_sampled),varG)]);
+
 end
 
 
