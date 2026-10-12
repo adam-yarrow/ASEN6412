@@ -20,6 +20,8 @@ function [u] = HarmonicPDE_Solution(uBC, K, h)
     u0 = uBC(1);
     uN = uBC(2);
 
+%% TODO - pass in Kiphalf and KitHalf from K(x,w) solver....
+    warning('TO FIX')
     % Build A diagonals
     KipHalf = (2 * K(1:N-1) .* K(2:N)) ./ (K(1:N-1) + K(2:N)); % Domain: 1 <= i <= N-1
     KitHalf = (2 * K(2:N) .* K(1:N-1)) ./ (K(2:N) + K(1:N-1)); % Domain: 2 <= i <= N; This is identical to KipHalf - can i just remove?
