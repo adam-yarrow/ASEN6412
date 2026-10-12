@@ -73,8 +73,24 @@ NmeanU = (1:Nmc) .* muU.^2;
 varU = (uSquared - NmeanU) ./ ((1:Nmc) - 1);
 varU(:,1) = NaN;
 
+%% TODO - calculate SEM of muU, maybe any stats on varU?
+
+
 
 %% Plotting Convergence
+[X, N_MC] = meshgrid(x, 1:Nmc);
 
+figure();
+% surf(X,N_MC,muU','EdgeAlpha',0.1);
+plot3(X,N_MC,muU');
+grid on;
+xlabel('x');
+ylabel('Number of Monte Carlo Samples');
+zlabel('E[u(x)]');
+title('Mean of u(x) vs x and Number of Samples')
+
+% plot 1-sigma on meanU and varU estimates?
+
+%% TODO - maybe pick a few points along x and plot these individually with SEM bounds?
 
 %% Probability of Max Temperature Calculations
