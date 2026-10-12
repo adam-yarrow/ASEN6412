@@ -11,21 +11,26 @@ function [u] = HarmonicPDE_Solution(uBC, K, h)
         h = finite discretization step size 
 %}
 
-    N = size(K,1);
+    % force dimension of K to be column vector
+    if size(K,1) < size(K,2)
+        K = K';
+    end
+
+    N = length(K);
     u0 = uBC(1);
     uN = uBC(2);
 
+    % Build A diagonals
+    KipHalf = (2 * K(1:N-1) .* K(2:N)) ./ (K(1:N-1) + K(2:N)); % Domain: 1 <= i <= N-1
+    KitHalf = (2 * K(2:N) .* K(1:N-1)) ./ (K(2:N) + K(1:N-1)); % Domain: 2 <= i <= N; This is identical to KipHalf - can i just remove?
 
-    % Build A matrix
-    %% TODO - might need to truncate this matrix to avoid issues?
-    Ki = K(1:N-1);
-    Kip1 = K(2:N);
-    Kit1 = K(1:N-1); % this feels wrong?
-    K_harmonicMeanPlus = 2 * Ki .* Kip1 ./ (Ki + Kip1);
-    K_harmonicMeanMinus = 2 * Ki .* Kit1 ./ (Ki + Kit1);
-    diagTerms = 
-    A = zeros(N,N);
+    Aii = [1; KipHalf(2:end) + KitHalf(1:end-1); 1];
+    A = diag(Aii);
 
+    % Add off diagonals
+    A = A + ...
+        diag([-KitHalf(1:N-2); 0], -1) + ...
+        diag([0; -KipHalf(2:N-1)], +1);
 
     % Build b vector
     b = [u0; ones(N-2,1)*h^2; uN];
@@ -34,6 +39,6 @@ function [u] = HarmonicPDE_Solution(uBC, K, h)
     u = A\b; 
 
     % Force BC to avoid any numerical precision issues
-    u(0) = uBC(1);
+    u(1) = uBC(1);
     u(N) = uN;
 end
