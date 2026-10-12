@@ -89,6 +89,16 @@ ylabel('Number of Monte Carlo Samples');
 zlabel('E[u(x)]');
 title('Mean of u(x) vs x and Number of Samples')
 
+
+figure();
+% surf(X,N_MC,varU','EdgeAlpha',0.1);
+plot3(X,N_MC,varU');
+grid on;
+xlabel('x');
+ylabel('Number of Monte Carlo Samples');
+zlabel('Var(u(x))');
+title('Variance of u(x) vs x and Number of Samples')
+
 % plot 1-sigma on meanU and varU estimates?
 
 %% TODO - maybe pick a few points along x and plot these individually with SEM bounds?
