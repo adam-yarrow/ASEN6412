@@ -1,37 +1,29 @@
-function [u] = HarmonicPDE_Solution(uBC, K, h)
+function [u] = HarmonicPDE_Solution(uBC, KipHalf, KitHalf, h)
 %{
     Solves the 1D heat diffusion PDE for HW3 using flux form:
     d/dx(K(x) * d/dx(u(x)) = 1
 
-    Uses harmonic average of K.
-
     Inputs:
         uBC = 2x1 vector of boundary conditions at x = 0, x = N
-        K = N x 1 vector of thermal conductivity values
+        KipHalf = N x 1 vector of thermal conductivity values evaluated at
+             i+1/2 (valid for i = 1:N-1)
+        KitHalf = N x 1 vector of thermal conductivity values evaluated at
+             i-1/2 (valid for i = 2:N)
         h = finite discretization step size 
 %}
 
-    % force dimension of K to be column vector
-    if size(K,1) < size(K,2)
-        K = K';
-    end
-
-    N = length(K);
+    N = length(KipHalf);
     u0 = uBC(1);
     uN = uBC(2);
 
-%% TODO - pass in Kiphalf and KitHalf from K(x,w) solver....
-    warning('TO FIX')
     % Build A diagonals
-    KipHalf = (2 * K(1:N-1) .* K(2:N)) ./ (K(1:N-1) + K(2:N)); % Domain: 1 <= i <= N-1
-    KitHalf = (2 * K(2:N) .* K(1:N-1)) ./ (K(2:N) + K(1:N-1)); % Domain: 2 <= i <= N; This is identical to KipHalf - can i just remove?
-
-    Aii = [1; KipHalf(2:end) + KitHalf(1:end-1); 1];
+    Aii = [1; KipHalf(2:N-1) + KitHalf(2:N-1); 1]; % Range goes from i = 2 to i = N-1
     A = diag(Aii);
 
     % Add off diagonals
+    %% TODO - who fucking knows if this is correct
     A = A + ...
-        diag([-KitHalf(1:N-2); 0], -1) + ...
+        diag([-KitHalf(2:N-1); 0], -1) + ...
         diag([0; -KipHalf(2:N-1)], +1);
 
     % Build b vector

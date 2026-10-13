@@ -11,19 +11,21 @@ N = numel(x);
 Kconst = 5;
 
 %% Case 1: K(x) = Constant
-K = ones(N,1)*Kconst;
+KipHalf = ones(N,1)*Kconst;
+KitHalf = KipHalf;
 
 uAnalytical_ConstK = ConstantKSolution(Kconst,x);
-uDiscrete_ConstK = HarmonicPDE_Solution(uBC, K, dx);
+uDiscrete_ConstK = HarmonicPDE_Solution(uBC, KipHalf, KitHalf, dx);
 percErr_ConstK = (uDiscrete_ConstK - uAnalytical_ConstK) ./ uAnalytical_ConstK * 100;
 
 plotComparison(x, uDiscrete_ConstK, uAnalytical_ConstK, percErr_ConstK, 'Constant K')
 
 %% Case 2: K(x) = K*(1+x)
-K = Kconst*(ones(N,1) + x);
+KitHalf = Kconst*(ones(N,1) + x-dx/2);
+KipHalf = Kconst*(ones(N,1) + x+dx/2);
 
 uAnalytical_LinK = LinearKSolution(Kconst,x);
-uDiscrete_LinK= HarmonicPDE_Solution(uBC, K, dx);
+uDiscrete_LinK= HarmonicPDE_Solution(uBC, KipHalf, KitHalf, dx);
 percErr_LinK = (uDiscrete_LinK - uAnalytical_LinK) ./ uAnalytical_LinK * 100;
 
 plotComparison(x, uDiscrete_LinK, uAnalytical_LinK, percErr_LinK, 'Linear K')
