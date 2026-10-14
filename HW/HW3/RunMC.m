@@ -93,8 +93,8 @@ function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
 end
 
 %% Convergence of Mean and Variance of u(x)
-Nmc = 1E6;
-Nx = 1001;
+Nmc = 1E7;
+Nx = 101;
 
 % Setup Nmc dependent vars
 Y = randn(d, Nmc);
