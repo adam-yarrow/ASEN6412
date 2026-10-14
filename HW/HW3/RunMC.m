@@ -94,7 +94,7 @@ end
 
 %% Convergence of Mean and Variance of u(x)
 Nmc = 1E6;
-Nx = 101;
+Nx = 1001;
 
 % Setup Nmc dependent vars
 Y = randn(d, Nmc);
@@ -151,3 +151,13 @@ title('Convergence of Probability Estimates Vs Number of MC Runs')
 muUmax(end)
 sigmaUmax(end)
 profile off
+
+
+%% Testing prob convergence
+figure();
+smoothedReduction = movmean(abs(diff(probCaseA)) ./ probCaseA(1:end-1),10000);
+semilogy(2:Nmc, smoothedReduction)
+grid on
+xlabel('Number of MC Runs')
+ylabel('Smoothed Difference');
+title('Smoothed Absolute Change Between Samples of the Probability')
