@@ -13,14 +13,29 @@ function [phi] = evalEigenfunctionKLE(omega_i, a, i, t)
     fReturnValue = nargin == 4; % e.g. time provided
 
     commonFactor = sin(2*omega_i.*a) ./ (2*omega_i);
-    if isEven(i)
-        phi = @(t) sin(omega_i.*t) ./ (a - commonFactor).^0.5;       
-    else
-        phi = @(t) cos(omega_i.*t) ./ (a + commonFactor).^0.5;
-    end
-
+    
+    % Faster to duplicate code?
     if fReturnValue
-        phi = phi(t);
+        if isEven(i)
+            phi = phiEven(omega_i,t,a,commonFactor);       
+        else
+            phi = phiOdd(omega_i,t,a,commonFactor);
+        end
+    else
+        % Build functions
+        if isEven(i)
+            phi = @(t) phiEven(omega_i,t,a,commonFactor);   
+        else
+            phi = @(t) phiOdd(omega_i,t,a,commonFactor);
+        end
     end
+end
+
+function f = phiEven(omega_i,t,a,commonFactor)
+    f = sin(omega_i.*t) ./ (a - commonFactor).^0.5;
+end
+
+function f = phiOdd(omega_i,t,a,commonFactor)
+    f = cos(omega_i.*t) ./ (a + commonFactor).^0.5;
 end
 

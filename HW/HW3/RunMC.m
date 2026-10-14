@@ -109,8 +109,7 @@ sigmaEst = sqrt(uStats.var(:,end));
 figure('Name','Convergence of Mean and Variance');
 %TODO - put convergence criteria here...
 
-
-
+% Ploting u(x)
 figure('Name','HW3 - u Estimate');
 hold on;
 plot(x, uStats.mu(:,end), 'r');
@@ -123,12 +122,9 @@ ylabel('u(x) Estimate');
 title(sprintf('Monte Carlo Estimate of u(x) - Mean and Variance - N = %i', Nmc))
 
 
-%% Probability of Max Temperature Calculations
+% Probability of Max Temperature Calculations
 % Uses the solution from previous convergence demonstration
 [muUmax, varUmax] = CumulativeStats(uStats.max, Nmc);
-% 
-% probCaseA = NaN(Nmc,1);
-% probCaseB = NaN(Nmc,1);
 
 sigmaUmax = sqrt(varUmax);
 
@@ -137,18 +133,6 @@ Ic_CaseB = uStats.max > muUmax(end) + 4*sigmaUmax(end);
 
 probCaseA = cumsum(Ic_CaseA) ./ (1:Nmc);
 probCaseB = cumsum(Ic_CaseB) ./ (1:Nmc);
-
-% tic
-% for i = 2:Nmc
-%     % Ic_CaseA = uStats.max(1:i) > muUmax(i) + 3*sigmaUmax(i);
-%     Ic_CaseA = uStats.max(1:i) > muUmax(end) + 3*sigmaUmax(end);
-%     probCaseA(i) = sum(Ic_CaseA) / i;
-% 
-%     % Ic_CaseB = uStats.max(1:i) > muUmax(i) + 4*sigmaUmax(i);
-%     Ic_CaseB = uStats.max(1:i) > muUmax(end) + 4*sigmaUmax(end);
-%     probCaseB(i) = sum(Ic_CaseB) / i;
-% end
-% toc
 
 figure('Name','Probability Cases Convergence');
 semilogx(1:Nmc, probCaseA,...
@@ -163,4 +147,7 @@ ylabel('Probability of Occurance');
 title('Convergence of Probability Estimates Vs Number of MC Runs')
 
 
-%% Helper
+
+muUmax(end)
+sigmaUmax(end)
+profile off

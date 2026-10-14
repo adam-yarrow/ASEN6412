@@ -14,21 +14,28 @@ dx = x(2) - x(1);
 Nx = numel(x);
 Nmc = size(uBC,1);
 
-%% Sampling K(x)
+% Sampling K(x) preallocation
 x_itHalf = x - dx/2; 
 x_itHalf = x_itHalf(2:end); % First entry outside of domain -> remove
-KitHalf_vs_x = exp(getRV_KLE(x_itHalf, dataKLE, Y)); % Exponential K(x,w) = exp(Gd(x,w))
-KipHalf_vs_x = KitHalf_vs_x; % Symmetry condition - saves compute
 
-% pad with Nans to make size Nx1
-KipHalf_vs_x = [KipHalf_vs_x; NaN(1,Nmc)]; 
-KitHalf_vs_x = [NaN(1,Nmc); KitHalf_vs_x];
+% Pre-make eigenfunctions - I AM SPEED!
+% Eigenfunctions don't change between MC runs
+[phiMatrix] = MakePhiMatrix(x_itHalf, dataKLE);
 
 %% Solve MC
 u = NaN(Nx,Nmc);
+KipHalf_vs_x = NaN(Nx,1); % padded with NaNs
+KitHalf_vs_x = NaN(Nx,1);
+
+% Run MC
 for i = 1:Nmc
-    u(:,i) = HarmonicPDE_Solution(uBC(i,:), ...
-                KipHalf_vs_x(:,i), KitHalf_vs_x(:,i), dx);
+    % Sampling K(x) - doing inside loop to avoid overflowing memory for
+    % large Nx and Nmc - at cost of more compute time
+    KitHalf_vs_x(2:end) = exp(getRV_KLE_Fast(x_itHalf, dataKLE, phiMatrix, Y(:,i))); % Exponential K(x,w) = exp(Gd(x,w))
+    KipHalf_vs_x(1:end-1) = KitHalf_vs_x(2:end); % Symmetry condition - saves compute
+    
+    % Solving
+    u(:,i) = HarmonicPDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
 end
 
 %% Generate Statistics
