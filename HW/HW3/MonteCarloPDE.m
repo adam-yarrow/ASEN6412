@@ -36,6 +36,7 @@ for i = 1:Nmc
     
     % Solving
     u(:,i) = HarmonicPDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
+
 end
 
 %% Generate Statistics
@@ -55,17 +56,16 @@ integralMuU = trapz(x,muU,1);
 integralVarU = trapz(x,varU,1);
 
 % Integral of difference between different number of runs
-
-
 muU_IntegralReduction = calculateReduction(integralMuU);
 varU_IntegralReduction = calculateReduction(integralVarU);
-
 
 
 %% Logging Data
 uStats.mu = muU;
 uStats.var = varU;
 uStats.max = umax;
+uStats.integralMu = integralMuU;
+uStats.integralVarU = integralVarU;
 uStats.convergence.muMidPointReduction = muU_xHalfReduction;
 uStats.convergence.varMidPointReduction = varU_xHalfReduction;
 uStats.convergence.muIntegralReduction = muU_IntegralReduction;
