@@ -1,5 +1,13 @@
 %{
-    TODO - update README
+    Before running this script the StartupHW3 script must be ran to
+    initialize the paths.
+
+    This script runs MC simulations for calculating:
+        1. grid dependence of mean and variance of u(x) 
+        2. Estimates of the mean and variance of u(x)
+        3. Probability of having a maximum temperature over specified
+        thresholds
+        4. Grid dependence of the probability thresholds.
 %}
 % Fix random seed for repeatability
 rng(12102026);
@@ -65,7 +73,7 @@ plotMeanAndVarForDiffGrid('Mid Point',uStats,'muAtXhalf','varAtXhalf',...
 %     '$\int_{0}^{1}<u(x)>dx$','$\int_{0}^{1}Var(u(x))dx$', Nx, Nmc);
 
 %% Convergence of Mean and Variance of u(x)
-Nmc = 1E6;
+Nmc = 5E6;
 Nx = 101;
 
 % Setup Nmc dependent vars
@@ -73,25 +81,33 @@ Y = randn(d, Nmc);
 [uBC] = generateU_BC(Nmc, muTheta, sigmaTheta);
 
 x = linspace(xMin,xMax,Nx)';
-profile on
 [u, uStats] = MonteCarloPDE(x, uBC, dataKLE, Y, fPlot);
-profile viewer
-sigmaEst = sqrt(uStats.var(:,end));
+sigmaEst = sqrt(uStats.var(:,end)); % Get final sigma estimate
 
-figure('Name','Convergence of Mean and Variance');
-%TODO - put convergence criteria here...
+% Plotting Convergence
+plotReduction('muMidPointReduction', 'varMidPointReduction', {uStats}, Nmc, Nx,...
+                'Relative Reduction in <u(0.5)>','Relative Reduction in Var(u(0.5))' );
+sgtitle('Relative Reduction in Mean and Variance of u(0.5) vs Number of MC Runs');
+plotMeanAndVarForDiffGrid('Mid Point',{uStats},'muAtXhalf','varAtXhalf',...
+    '<u(0.5)>','Var(u(0.5))', Nx, Nmc);
 
-% Ploting u(x)
+% Ploting Final Mean and Variance Estimates
 figure('Name','HW3 - u Estimate');
+subplot(2,1,1);
 hold on;
-plot(x, uStats.mu(:,end), 'r');
-plot(x, uStats.mu(:,end) + sigmaEst,'r--');
-plot(x, uStats.mu(:,end) - sigmaEst,'r--');
-legend('\mu','\mu +/- \sigma');
+plot(x, uStats.mu(:,end), 'k','LineWidth',2);
 grid on;
 xlabel('x');
-ylabel('u(x) Estimate');
-title(sprintf('Monte Carlo Estimate of u(x) - Mean and Variance - N = %i', Nmc))
+ylabel('<u(x)> Estimate');
+title('MC Estimate of <u(x)>',sprintf('Nmc = %i - Nx = %i', Nmc, Nx))
+
+subplot(2,1,2);
+hold on;
+plot(x, uStats.var(:,end), 'k','LineWidth',2);
+grid on;
+xlabel('x');
+ylabel('Var(u(x)) Estimate');
+title('MC Estimate of Var(u(x))',sprintf('Nmc = %i - Nx = %i', Nmc, Nx))
 
 
 % Probability of Max Temperature Calculations
@@ -115,21 +131,8 @@ ylabel('Probability of Occurance');
 title('Convergence of Probability Estimates Vs Number of MC Runs')
 
 
-profile off
-
-
-%% Testing prob convergence
-figure();
-smoothedReduction = movmean(abs(diff(probCaseA)) ./ probCaseA(1:end-1),10000);
-semilogy(2:Nmc, smoothedReduction)
-grid on
-xlabel('Number of MC Runs')
-ylabel('Smoothed Difference');
-title('Smoothed Absolute Change Between Samples of the Probability')
-
-
 %% Grid Convergence Study - On Probabilities
-Nmc = 1E6; %% TODO - might need to make this larger
+Nmc = 1E5; %% TODO - might need to make this larger
 fPlot = false;
 
 % Setup Nmc dependent vars
@@ -140,7 +143,7 @@ Y = randn(d, Nmc);
 u = cell(3,1);
 uStats = cell(3,1);
 x = cell(3,1);
-Nx_grid = [5, 21, 81, 161];%[11, 51, 101, 501, 1001];
+Nx_grid = [5, 21, 81, 101, 161];
 Ngrid = numel(Nx_grid);
 probCaseA_Grid = NaN(Nmc, Ngrid);
 probCaseB_Grid = NaN(Nmc, Ngrid);
@@ -226,7 +229,7 @@ end
 
 
 
-function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
+function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx, yLabelMu, yLabelVar)
     Ngrid = numel(Nx);
     figure(); 
     subplot(2,1,1);
@@ -237,7 +240,8 @@ function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
     grid on;
     legend();
     xlabel('Number of MonteCarlo Runs')
-    % ylabel('$|(\bar{u_{i}}-\bar{u_{i-1}})/\bar{u_{i-1}}|$','Interpreter','latex')
+    ylabel(yLabelMu);
+
     subplot(2,1,2);
     for i = 1:Ngrid
         semilogy(1:Nmc, uStats{i}.convergence.(varNameVariance),'DisplayName',sprintf('Nx = %i',Nx(i)));
@@ -246,4 +250,5 @@ function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
     grid on;
     legend();
     xlabel('Number of MonteCarlo Runs')
+    ylabel(yLabelVar);
 end

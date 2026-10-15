@@ -1,5 +1,6 @@
 %{
-Tests the PDE solver for constant K.
+    Verifies the PDE solver against analytical solutions for constant and
+    linear K(x).
 %}
 %% General Configuration
 uBC = [0,0];
