@@ -36,7 +36,6 @@ for i = 1:Nmc
     
     % Solving
     u(:,i) = HarmonicPDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
-
 end
 
 %% Generate Statistics
@@ -64,6 +63,8 @@ varU_IntegralReduction = calculateReduction(integralVarU);
 uStats.mu = muU;
 uStats.var = varU;
 uStats.max = umax;
+uStats.muAtXhalf = muU(xHalfIdx, :);
+uStats.varAtXhalf = varU(xHalfIdx, :);
 uStats.integralMu = integralMuU;
 uStats.integralVarU = integralVarU;
 uStats.convergence.muMidPointReduction = muU_xHalfReduction;

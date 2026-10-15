@@ -1,13 +1,5 @@
 %{
-    This script generates monte-carlo samples of the stochastic PDE
-    d/dx(K(x,w)*du(x,w)/dx) = 1.0
- 
-    K(x,w) = exp(G(x,w)
-    x = [0,1]
-    G(x,w) = Gaussian random process with mean of 1.0 and exponential
-    covariance function.
-
-    TODO - might make this a function later? If its worth it/can be arsed
+    TODO - update README
 %}
 % Fix random seed for repeatability
 rng(12102026);
@@ -43,10 +35,8 @@ end
 meanGFunc = @(x) muG * ones(size(x));
 dataKLE = generateKLE_Struct(lambdaGxx, omegaGxx, meanGFunc, aGxx, d);
 
-%% Grid Convergence Study
-warning('Grid convergence showing no impact on convergence of mu(u) and var(u) - expected?')
-
-Nmc = 1E4; %% TODO - might need to make this larger
+%% Grid Convergence Study - Mean and Variance
+Nmc = 1E4;
 
 fPlot = false;
 
@@ -55,45 +45,27 @@ Y = randn(d, Nmc);
 [uBC] = generateU_BC(Nmc, muTheta, sigmaTheta);
 
 % Variables
-u = cell(3,1);
-uStats = cell(3,1);
-x = cell(3,1);
-Nx = NaN(3,1);
-for i = 1:3
+maxGrids = 5;
+u = cell(maxGrids,1);
+uStats = cell(maxGrids,1);
+x = cell(maxGrids,1);
+Nx = NaN(maxGrids,1);
+for i = 1:maxGrids
     Nx(i) = 4^i + 1;
     x{i} = linspace(xMin,xMax,Nx(i))';
     [u{i}, uStats{i}] = MonteCarloPDE(x{i}, uBC, dataKLE, Y, fPlot);
 end
 
-plotReduction('muMidPointReduction', 'varMidPointReduction', uStats, Nmc, Nx);
+% plotReduction('muMidPointReduction', 'varMidPointReduction', uStats, Nmc, Nx);
+% plotReduction('muIntegralReduction', 'varIntegralReduction', uStats, Nmc, Nx);
+plotMeanAndVarForDiffGrid('Mid Point',uStats,'muAtXhalf','varAtXhalf',...
+    '<u(0.5)>','Var(u(0.5))', Nx, Nmc);
 
-plotReduction('muIntegralReduction', 'varIntegralReduction', uStats, Nmc, Nx);
-
-
-function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
-    Ngrid = numel(Nx);
-    figure(); 
-    subplot(2,1,1);
-    for i = 1:Ngrid
-        semilogy(1:Nmc, uStats{i}.convergence.(varNameMu),'DisplayName',sprintf('Nx = %i',Nx(i)));
-        hold on;
-    end
-    grid on;
-    legend();
-    xlabel('Number of MonteCarlo Runs')
-    % ylabel('$|(\bar{u_{i}}-\bar{u_{i-1}})/\bar{u_{i-1}}|$','Interpreter','latex')
-    subplot(2,1,2);
-    for i = 1:Ngrid
-        semilogy(1:Nmc, uStats{i}.convergence.(varNameVariance),'DisplayName',sprintf('Nx = %i',Nx(i)));
-        hold on;
-    end
-    grid on;
-    legend();
-    xlabel('Number of MonteCarlo Runs')
-end
+% plotMeanAndVarForDiffGrid('Spatial Mean',uStats,'integralMu','integralVarU',...
+%     '$\int_{0}^{1}<u(x)>dx$','$\int_{0}^{1}Var(u(x))dx$', Nx, Nmc);
 
 %% Convergence of Mean and Variance of u(x)
-Nmc = 1E7;
+Nmc = 1E6;
 Nx = 101;
 
 % Setup Nmc dependent vars
@@ -218,3 +190,60 @@ grid on
 xlabel('Number of MC Runs')
 ylabel('Smoothed Difference');
 title('Smoothed Absolute Change Between Samples of the Probability')
+
+
+
+%% Plotting Functions
+
+function plotMeanAndVarForDiffGrid(figName,uStats,meanVar,varVar,yMuAxisName,yVarAxisName,Nx,Nmc)
+    Ngrid = numel(Nx);
+    figure('Name',sprintf('Convergence of %s vs Number of MC Runs',figName)); 
+    subplot(2,1,1);
+    for i = 1:Ngrid
+        semilogx(1:Nmc, uStats{i}.(meanVar),'DisplayName',sprintf('Nx = %i',Nx(i)));
+        hold on;
+    end
+    grid on;
+    legend();
+    xlabel('Number of MonteCarlo Runs')
+    ylabel(yMuAxisName,'Interpreter','latex');
+    title(['Convergence of ', yMuAxisName, ' vs Nmc Runs'],'Interpreter','latex')
+
+    subplot(2,1,2);
+    for i = 1:Ngrid
+        semilogx(1:Nmc, uStats{i}.(varVar),'DisplayName',sprintf('Nx = %i',Nx(i)));
+        hold on;
+    end
+    grid on;
+    legend();
+    xlabel('Number of MonteCarlo Runs');
+    ylabel(yVarAxisName,'Interpreter','latex');
+    title(['Convergence of ', yVarAxisName, ' vs Nmc Runs'],'Interpreter','latex')
+
+    sgtitle(sprintf('Convergence of %s vs Number of MC Runs',figName));
+end
+
+
+
+
+function plotReduction(varNameMu, varNameVariance, uStats, Nmc, Nx)
+    Ngrid = numel(Nx);
+    figure(); 
+    subplot(2,1,1);
+    for i = 1:Ngrid
+        semilogy(1:Nmc, uStats{i}.convergence.(varNameMu),'DisplayName',sprintf('Nx = %i',Nx(i)));
+        hold on;
+    end
+    grid on;
+    legend();
+    xlabel('Number of MonteCarlo Runs')
+    % ylabel('$|(\bar{u_{i}}-\bar{u_{i-1}})/\bar{u_{i-1}}|$','Interpreter','latex')
+    subplot(2,1,2);
+    for i = 1:Ngrid
+        semilogy(1:Nmc, uStats{i}.convergence.(varNameVariance),'DisplayName',sprintf('Nx = %i',Nx(i)));
+        hold on;
+    end
+    grid on;
+    legend();
+    xlabel('Number of MonteCarlo Runs')
+end
