@@ -73,7 +73,7 @@ plotMeanAndVarForDiffGrid('Mid Point',uStats,'muAtXhalf','varAtXhalf',...
 %     '$\int_{0}^{1}<u(x)>dx$','$\int_{0}^{1}Var(u(x))dx$', Nx, Nmc);
 
 %% Convergence of Mean and Variance of u(x)
-Nmc = 5E6;
+Nmc = 1E4;
 Nx = 101;
 
 % Setup Nmc dependent vars
@@ -119,16 +119,26 @@ probCaseB = calculateProbabilityOfMax(muUmax, varUmax, uStats, 4);
 
 
 figure('Name','Probability Cases Convergence');
-semilogx(1:Nmc, probCaseA,...
+loglog(1:Nmc, probCaseA,...
     'DisplayName','P(u_{max} > <u_{max}> + 3Var(u_{max})^{1/2}');
 hold on;
-semilogx(1:Nmc, probCaseB,...
+loglog(1:Nmc, probCaseB,...
     'DisplayName','P(u_{max} > <u_{max}> + 4Var(u_{max})^{1/2}');
 grid on;
 legend();
 xlabel('Number of Monte Carlo Runs');
 ylabel('Probability of Occurance');
 title('Convergence of Probability Estimates Vs Number of MC Runs')
+
+% Reduction Plot Testing
+figure();
+smoothedReductionProbA = abs(diff(probCaseA)) ./ probCaseA(1:end-1);
+semilogy(2:Nmc, smoothedReductionProbA)
+hold on;
+grid on
+xlabel('Number of MC Runs')
+ylabel('Relative Probability Reduction');
+title('Relative Change Between Samples of the Probability')
 
 
 %% Grid Convergence Study - On Probabilities

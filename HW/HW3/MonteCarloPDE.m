@@ -27,6 +27,9 @@ u = NaN(Nx,Nmc);
 KipHalf_vs_x = NaN(Nx,1); % padded with NaNs
 KitHalf_vs_x = NaN(Nx,1);
 
+t0 = tic;
+wb = progressBar(1,Nmc,t0,[]);
+
 % Run MC
 for i = 1:Nmc
     % Sampling K(x) - doing inside loop to avoid overflowing memory for
@@ -36,7 +39,16 @@ for i = 1:Nmc
     
     % Solving
     u(:,i) = HarmonicPDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
+
+    % Update Progress Bar
+    wb = progressBar(i, Nmc, t0, wb);        
+    if isfield(wb, 'cancelled') && wb.cancelled
+        fprintf('Loop cancelled at iter %d\n', i);
+        break
+    end
 end
+
+close
 
 %% Generate Statistics
 [muU, varU] = CumulativeStats(u, Nmc);
