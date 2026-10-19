@@ -72,8 +72,9 @@ plotMeanAndVarForDiffGrid('Mid Point',uStats,'muAtXhalf','varAtXhalf',...
 % plotMeanAndVarForDiffGrid('Spatial Mean',uStats,'integralMu','integralVarU',...
 %     '$\int_{0}^{1}<u(x)>dx$','$\int_{0}^{1}Var(u(x))dx$', Nx, Nmc);
 
+
 %% Convergence of Mean and Variance of u(x)
-Nmc = 1E4;
+Nmc = 1E7;
 Nx = 101;
 
 % Setup Nmc dependent vars
@@ -132,13 +133,40 @@ title('Convergence of Probability Estimates Vs Number of MC Runs')
 
 % Reduction Plot Testing
 figure();
-smoothedReductionProbA = abs(diff(probCaseA)) ./ probCaseA(1:end-1);
-semilogy(2:Nmc, smoothedReductionProbA)
+smoothedReductionProbA = abs(diff(probCaseB)) ./ probCaseB(1:end-1);
+loglog(2:Nmc, smoothedReductionProbA)
 hold on;
 grid on
 xlabel('Number of MC Runs')
 ylabel('Relative Probability Reduction');
 title('Relative Change Between Samples of the Probability')
+
+
+% Plot Over entire domain
+idxToPlot =  [1E1, 1E3, 1E5, 1E7];
+figure();
+
+subplot(2,1,1);
+hold on;
+for i = idxToPlot
+    plot(x, uStats.mu(:,i), 'DisplayName',sprintf('N = %i',i));
+end
+grid on;
+xlabel('x');
+ylabel('<u(x)> Estimate');
+title('MC Estimate of <u(x)>')
+legend();
+
+subplot(2,1,2);
+hold on;
+for i = idxToPlot
+    plot(x, uStats.var(:,i), 'DisplayName',sprintf('N = %i',i));
+end
+grid on;
+xlabel('x');
+ylabel('Var(u(x)) Estimate');
+title('MC Estimate of Var(u(x))')
+legend();
 
 
 %% Grid Convergence Study - On Probabilities
@@ -215,6 +243,12 @@ function plotMeanAndVarForDiffGrid(figName,uStats,meanVar,varVar,yMuAxisName,yVa
     for i = 1:Ngrid
         semilogx(1:Nmc, uStats{i}.(meanVar),'DisplayName',sprintf('Nx = %i',Nx(i)));
         hold on;
+        if Ngrid == 1
+            semilogx(1:Nmc, uStats{i}.(meanVar)(end) + sqrt(uStats{i}.(varVar)(end) ./ (1:Nmc)), ...
+                '--k','DisplayName',sprintf('1 sigma Bound'));
+            semilogx(1:Nmc, uStats{i}.(meanVar)(end) - sqrt(uStats{i}.(varVar)(end) ./ (1:Nmc)), ...
+                '--k','DisplayName',sprintf('1 sigma Bound'));
+        end
     end
     grid on;
     legend();
@@ -226,7 +260,14 @@ function plotMeanAndVarForDiffGrid(figName,uStats,meanVar,varVar,yMuAxisName,yVa
     for i = 1:Ngrid
         semilogx(1:Nmc, uStats{i}.(varVar),'DisplayName',sprintf('Nx = %i',Nx(i)));
         hold on;
-    end
+
+        if Ngrid == 1
+            semilogx(2:Nmc, uStats{i}.(varVar)(end) + sqrt(2*uStats{i}.(varVar)(end)^2 ./ (1:Nmc-1)), ...
+                '--k','DisplayName',sprintf('1 sigma Bound'));
+            semilogx(2:Nmc, uStats{i}.(varVar)(end) -  sqrt(2*uStats{i}.(varVar)(end)^2 ./ (1:Nmc-1)), ...
+                '--k','DisplayName',sprintf('1 sigma Bound'));
+        end
+    end    
     grid on;
     legend();
     xlabel('Number of MonteCarlo Runs');
