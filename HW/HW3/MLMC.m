@@ -1,5 +1,8 @@
 %{
     MLMC bonus question.
+
+    This script shows the relative cost of MLMC vs MC methods for different
+    MSE levels and grid refinement.
     
 %}
 StartupHW3();
@@ -40,7 +43,7 @@ fPlotMC = false;
 %% Generate Pilot Sample Estimates
 Npilot = 100;
 
-NxGrid = [8, 32, 128, 1024];% + 1; % add +1 so dont have to interpolate
+NxGrid = [8, 32, 128, 1024];
 l = 0:3;
 nGrid = numel(NxGrid);
 
@@ -67,16 +70,13 @@ for i = 1:nGrid
 
         x_l = linspace(xMin,xMax,NxGrid(i))';
         [u_l, uStats_l] = MonteCarloPDE(x_l, uBC, dataKLE, Y, fPlotMC);
+        VarUestimate_Ql_xHalf(i) = interp1(x_l, uStats_l.var(:,end), 0.5); % For MC Calcs
 
         x_lt1 = linspace(xMin,xMax,NxGrid(i-1))';
         [u_lt1, uStats_lt1] = MonteCarloPDE(x_lt1, uBC, dataKLE, Y, fPlotMC);
 
-        xHalfIdx_l = find(x_l == 0.5);
-        xHalfIdx_lt1 = find(x_lt1 == 0.5);
-        Qdiff = u_l(xHalfIdx_l,:) - u_lt1(xHalfIdx_lt1,:);
-
+        Qdiff = interp1(x_l, u_l, 0.5) - interp1(x_lt1, u_lt1, 0.5);
         VarUestimates_Qdiff_xHalf(i-1) = var(Qdiff);
-        VarUestimate_Ql_xHalf(i) = uStats_l.varAtXhalf(end); % For MC calculations
     end
 end
 
@@ -84,7 +84,7 @@ end
 epsilon = [0.1, 0.01, 0.001];
 nEps = numel(epsilon);
 
-relativeCostPerGrid = (NxGrid-1)' / (NxGrid(1)-1); % E.g. Normalized cost to smallest grid size
+relativeCostPerGrid = (NxGrid)' / (NxGrid(1)); % E.g. Normalized cost to smallest grid size
 
 Ctot_MC = NaN(nEps, nGrid);
 Ntot_MC = NaN(nEps, nGrid);
@@ -106,13 +106,13 @@ for k = 1:nEps
     
 end
 
-%% TODO - for loop the plots and color coordinate/ make dashed or different symbols for different levels
-
+%% Plotting
 figure('Name','MC vs MLMC Cost');
-loglog(epsilon, Ctot_MLMC,'k--','DisplayName','MLMC');
+loglog(epsilon, Ctot_MLMC,'k--','DisplayName','MLMC','LineWidth',1.5);
 hold on;
 for i = 1:nGrid
-    loglog(epsilon, Ctot_MC(:,i),'DisplayName',sprintf('MC Level = %i',l(i)));
+    loglog(epsilon, Ctot_MC(:,i),'DisplayName',sprintf('MC Level = %i',l(i)),...
+        'LineWidth',1.5);
 end
 grid on;
 legend();
@@ -135,19 +135,11 @@ function [Ctot, N0min, Nlmin] = getMLMC_Cost(relativeCostPerGrid, Var_Ql, Var_Qd
 
     N0min = 2*C/epsilon_k^2 * sqrt(VarQ0/C0);
     Nlmin = 2*C/epsilon_k^2 * sqrt(Var_Qdiff ./ Cl);
-
-    % Renormalize N such that you have at least 1 sample at the smallest
-    % variance case
-    % smallestN = Nlmin(end);
-    % if smallestN < 1
-    %     Nlmin = Nlmin ./ smallestN;
-    %     N0min = N0min / smallestN;
-    % end
     
     % Round up to nearest integer multiples of N (such that achieve >=
     % condition)
-    Nlmin = ceil(Nlmin);
-    N0min = ceil(N0min);
+    Nlmin = round(Nlmin);
+    N0min = round(N0min);
 
     Ctot = N0min*C0 + dot(Cl, Nlmin);    
 end

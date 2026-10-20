@@ -1,7 +1,4 @@
 %{
-    Before running this script the StartupHW3 script must be ran to
-    initialize the paths.
-
     This script runs MC simulations for calculating:
         1. grid dependence of mean and variance of u(x) 
         2. Estimates of the mean and variance of u(x)
@@ -9,6 +6,8 @@
         thresholds
         4. Grid dependence of the probability thresholds.
 %}
+StartupHW3();
+
 % Fix random seed for repeatability
 rng(12102026);
 
