@@ -5,6 +5,9 @@
         3. Probability of having a maximum temperature over specified
         thresholds
         4. Grid dependence of the probability thresholds.
+
+    Note that this code relies on the code that was developed for HW2,
+    please see my submission for HW2 for details on the KLE solver etc.
 %}
 StartupHW3();
 

@@ -41,7 +41,7 @@ dataKLE = generateKLE_Struct(lambdaGxx, omegaGxx, meanGFunc, aGxx, d);
 fPlotMC = false;
 
 %% Generate Pilot Sample Estimates
-Npilot = 100;
+Npilot = 1E4;
 
 NxGrid = [8, 32, 128, 1024];
 l = 0:3;
@@ -138,8 +138,8 @@ function [Ctot, N0min, Nlmin] = getMLMC_Cost(relativeCostPerGrid, Var_Ql, Var_Qd
     
     % Round up to nearest integer multiples of N (such that achieve >=
     % condition)
-    Nlmin = round(Nlmin);
-    N0min = round(N0min);
+    Nlmin = ceil(Nlmin);
+    N0min = ceil(N0min);
 
     Ctot = N0min*C0 + dot(Cl, Nlmin);    
 end

@@ -2,6 +2,8 @@
     Verifies the PDE solver against analytical solutions for constant and
     linear K(x).
 %}
+StartupHW3();
+
 %% General Configuration
 uBC = [0,0];
 
