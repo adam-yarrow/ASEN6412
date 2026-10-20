@@ -48,7 +48,6 @@ for i = 1:Nmc
     end
 end
 
-close
 
 %% Generate Statistics
 [muU, varU] = CumulativeStats(u, Nmc);
