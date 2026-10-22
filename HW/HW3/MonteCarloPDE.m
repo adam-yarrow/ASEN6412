@@ -38,7 +38,7 @@ for i = 1:Nmc
     KipHalf_vs_x(1:end-1) = KitHalf_vs_x(2:end); % Symmetry condition - saves compute
     
     % Solving
-    u(:,i) = HarmonicPDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
+    u(:,i) = PDE_Solution(uBC(i,:), KipHalf_vs_x, KitHalf_vs_x, dx);
 
     % Update Progress Bar
     wb = progressBar(i, Nmc, t0, wb);        
