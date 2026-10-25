@@ -1,16 +1,87 @@
 %{
     Testing to see what i can get it to do
 %}
+Startup();
 
 const = ModelParams();
 
-tEnd = 50;
+tEnd = 20;
 xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
 PDControl = @(t,x,const) BasicController(t,x,const);
 simData = Simulation(xIC, PDControl, tEnd, const);
 plotSimulationResults({simData}, {'test'});
 
+
+%% Discrete Bayes filter for 1 variable on Basic Test
+CmalphaMin = 0.8*const.aero.CM_alpha;
+CmalphaMax = 1.2*const.aero.CM_alpha;
+theta = linspace(CmalphaMin, CmalphaMax, 500); % uniform grid of theta
+
+fTheta = @(theta_i) 1/(CmalphaMax - CmalphaMin); % Uniform prior
+
+% Make measured data of single traj
+Sxx = diag([10, deg2rad(5), deg2rad(5), deg2rad(5), 10]); % Dummy for now
+CxxEstimator = 1*Sxx.^2; % Technically can be different
+randVars = randn(size(simData.x));
+y = simData.x + Sxx*randVars; % Added zero mean additive gaussian white noise
+
+% now need likelihood function
+function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl, tEnd, const, xIC, CxxEstimator)
+    % Log likelihood
+  
+    % Run simulation using theta_i parameter
+    const.aero.CM_alpha = theta_i; 
+    [simData] = Simulation(xIC, PDControl, tEnd, const); % Assuming you know xIC
+    measInnov = y - simData.x;
+
+    % Now every meas innov should be iid under error distribution
+    NTimes = size(y,2);
+    fY_Theta = 0;
+    n = const.nStates;
+    fY_Theta_i = zeros(NTimes,1);
+    for i = 1:NTimes
+        % Noise is MV gaussian
+        fY_Theta_i(i) = 1./((2*pi)^(n/2)*sqrt(det(CxxEstimator)))  * ...
+                exp(-1/2*(measInnov(:,i)'*inv(CxxEstimator)*measInnov(:,i)));
+        fY_Theta = fY_Theta + log(fY_Theta_i(i)); % product of iid distributions
+    end
+       
+end
+
+% Discrete Bayes Filter for a single trajectory
+function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fThetaPrior, PDControl, tEnd, const, xIC, CxxEstimator)
+    nTheta = numel(theta);
+    fTheta_Y = zeros(nTheta,1);
+    likelihoodVsTimeAndTheta = NaN(size(y,2), nTheta);
+    measInnov = NaN(size(y,1), size(y,2), nTheta);
+    for i = 1:nTheta
+        [logLikelihood, likelihoodVsTimeAndTheta(:,i), measInnov(:,:,i)] = fYgivenTheta(y, theta(i), PDControl, tEnd, const, xIC, CxxEstimator);
+        fTheta_Y(i) = logLikelihood + log(fThetaPrior(theta(i)));
+    end
+
+    % Normalize density
+    fTheta_Y = fTheta_Y - max(fTheta_Y); % arbitrarily normalize to make exp less painful
+    fY = sum(exp(fTheta_Y));
+
+    fTheta_Y = exp(fTheta_Y) ./ fY; 
+end
+
+% Try Discrete Bayes Filter
+[fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fTheta, PDControl, tEnd, const, xIC, CxxEstimator);
+
+figure();
+plot(theta, fTheta_Y);
+grid on;
+xlabel('\theta');
+ylabel('f_{\theta|Y}')
+
+figure(); 
+plot(simData.times, likelihoodVsTimeAndTheta);
+
+xReconstructed = y - measInnov;
+
+%% TODO - now try with a random theta parameter and a set of MC runs
 
 %% Testing Stochastic Param
 PDControl = @(t,x,const) BasicController(t,x,const);
@@ -27,14 +98,14 @@ times = 0:const.dT:tEnd;
 % Random Variables
 % TODO - maybe replace with beta distributions?
 sigmaCmAlpha = 0.1;
-sigmaCmAlphaSq = 0.6;
-sigmaCmDeltaE = 0.1;
-sigmaCM0 = 0.005;
+% sigmaCmAlphaSq = 0.6;
+% sigmaCmDeltaE = 0.1;
+% sigmaCM0 = 0.005;
 
-CM0 = const.aero.CM_0 + sigmaCM0*randn(Nsims,1);
+% CM0 = const.aero.CM_0 + sigmaCM0*randn(Nsims,1);
 CmAlpha = const.aero.CM_alpha + sigmaCmAlpha*randn(Nsims, 1);
-CmAlphaSq = const.aero.CM_alphaSq + sigmaCmAlphaSq*randn(Nsims, 1);
-CmDeltaE = const.aero.CM_deltaE  + sigmaCmDeltaE*randn(Nsims,1);
+% CmAlphaSq = const.aero.CM_alphaSq + sigmaCmAlphaSq*randn(Nsims, 1);
+% CmDeltaE = const.aero.CM_deltaE  + sigmaCmDeltaE*randn(Nsims,1);
 
 gamma0 = 0;
 muAlpha0 = 0;
@@ -53,9 +124,9 @@ alpha_N = NaN(Ndata, Nsims);
 for i = 1:Nsims
     % Make Random Vars
     constTemp.aero.CM_alpha = CmAlpha(i);
-    constTemp.aero.CM_alphaSq = CmAlphaSq(i);
-    constTemp.aero.CM_deltaE = CmDeltaE(i);
-    constTemp.aero.CM_0 = CM0(i);
+    % constTemp.aero.CM_alphaSq = CmAlphaSq(i);
+    % constTemp.aero.CM_deltaE = CmDeltaE(i);
+    % constTemp.aero.CM_0 = CM0(i);
 
     xICTemp(4) = alpha0(i) + gamma0;
 
@@ -77,7 +148,10 @@ figure();
 hold on; 
 plot(times, deltaE_Mean); 
 plot(times, deltaE_Mean + sqrt(deltaE_Var)); 
-plot(times, deltaE_Mean - sqrt(deltaE_Var))
+plot(times, deltaE_Mean - sqrt(deltaE_Var));
+
+
+
 
 %% Controller
 function [u, exit] = BasicController(t,x,const)    
