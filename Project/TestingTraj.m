@@ -18,54 +18,13 @@ CmalphaMin = 0.8*const.aero.CM_alpha;
 CmalphaMax = 1.2*const.aero.CM_alpha;
 theta = linspace(CmalphaMin, CmalphaMax, 500); % uniform grid of theta
 
-fTheta = @(theta_i) 1/(CmalphaMax - CmalphaMin); % Uniform prior
+fTheta = ones(500,1) ./ (CmalphaMax - CmalphaMin); % Uniform prior
 
 % Make measured data of single traj
 Sxx = diag([10, deg2rad(5), deg2rad(5), deg2rad(5), 10]); % Dummy for now
 CxxEstimator = 1*Sxx.^2; % Technically can be different
 randVars = randn(size(simData.x));
 y = simData.x + Sxx*randVars; % Added zero mean additive gaussian white noise
-
-% now need likelihood function
-function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl, tEnd, const, xIC, CxxEstimator)
-    % Log likelihood
-  
-    % Run simulation using theta_i parameter
-    const.aero.CM_alpha = theta_i; 
-    [simData] = Simulation(xIC, PDControl, tEnd, const); % Assuming you know xIC
-    measInnov = y - simData.x;
-
-    % Now every meas innov should be iid under error distribution
-    NTimes = size(y,2);
-    fY_Theta = 0;
-    n = const.nStates;
-    fY_Theta_i = zeros(NTimes,1);
-    for i = 1:NTimes
-        % Noise is MV gaussian
-        fY_Theta_i(i) = 1./((2*pi)^(n/2)*sqrt(det(CxxEstimator)))  * ...
-                exp(-1/2*(measInnov(:,i)'*inv(CxxEstimator)*measInnov(:,i)));
-        fY_Theta = fY_Theta + log(fY_Theta_i(i)); % product of iid distributions
-    end
-       
-end
-
-% Discrete Bayes Filter for a single trajectory
-function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fThetaPrior, PDControl, tEnd, const, xIC, CxxEstimator)
-    nTheta = numel(theta);
-    fTheta_Y = zeros(nTheta,1);
-    likelihoodVsTimeAndTheta = NaN(size(y,2), nTheta);
-    measInnov = NaN(size(y,1), size(y,2), nTheta);
-    for i = 1:nTheta
-        [logLikelihood, likelihoodVsTimeAndTheta(:,i), measInnov(:,:,i)] = fYgivenTheta(y, theta(i), PDControl, tEnd, const, xIC, CxxEstimator);
-        fTheta_Y(i) = logLikelihood + log(fThetaPrior(theta(i)));
-    end
-
-    % Normalize density
-    fTheta_Y = fTheta_Y - max(fTheta_Y); % arbitrarily normalize to make exp less painful
-    fY = sum(exp(fTheta_Y));
-
-    fTheta_Y = exp(fTheta_Y) ./ fY; 
-end
 
 % Try Discrete Bayes Filter
 [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fTheta, PDControl, tEnd, const, xIC, CxxEstimator);
@@ -76,12 +35,51 @@ grid on;
 xlabel('\theta');
 ylabel('f_{\theta|Y}')
 
-figure(); 
-plot(simData.times, likelihoodVsTimeAndTheta);
 
-xReconstructed = y - measInnov;
+%% Bayesian estimation with random Cm_alpha
+CmalphaMin = 0.5*const.aero.CM_alpha;
+CmalphaMax = 1.5*const.aero.CM_alpha;
+nTheta = 200;
+theta = linspace(CmalphaMin, CmalphaMax, nTheta); % uniform grid of theta
+Ntrials = 100;
+constTemp = const;
+sigmaCmAlpha = 0.2;
+fThetaPrior = ones(nTheta,1) ./ (CmalphaMax - CmalphaMin);
+fTheta_Yi = NaN(nTheta, Ntrials);
+tEnd = 5;
+CxxEstimator = 1*Sxx.^2;
+t0 = tic;
+wb = progressBar(1, Ntrials, t0, [], 'MC Runs');
+cmAlphaDistrib = const.aero.CM_alpha + sigmaCmAlpha*randn(Ntrials,1);
+for i = 1:Ntrials    
+    % Make Random CM Alpha
+    constTemp.aero.CM_alpha = cmAlphaDistrib(i);
+    simData_i = Simulation(xIC, PDControl, tEnd, constTemp);
 
-%% TODO - now try with a random theta parameter and a set of MC runs
+    % Make measurements
+    randVars = randn(size(simData_i.x));
+    y_i = simData_i.x + Sxx*randVars;
+
+    % Bayes Filter
+    fTheta_Yi(:,i) = DiscreteBayesFilter(theta, y_i, fThetaPrior, PDControl, tEnd, const, xIC, CxxEstimator);
+
+    % Update prior with posterior
+    % fThetaPrior = fTheta_Yi(:,i);
+
+    wb = progressBar(i, Ntrials, t0, wb);
+end
+
+
+
+
+
+
+% figure();
+% plot(theta, fTheta_Yi(:,end));
+% grid on;
+% xlabel('\theta');
+% ylabel('f_{\theta|Y}')
+
 
 %% Testing Stochastic Param
 PDControl = @(t,x,const) BasicController(t,x,const);
@@ -178,4 +176,49 @@ function [u, exit] = BasicController(t,x,const)
         
     % Build Inputs
     u = [0; deltaE_cmd; 0]; % No engine and no canard
+end
+
+%% Discrete Bayes Filter Functions
+% now need likelihood function
+function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl, tEnd, const, xIC, CxxEstimator)
+    % Log likelihood
+  
+    % Run simulation using theta_i parameter
+    const.aero.CM_alpha = theta_i; 
+    [simData] = Simulation(xIC, PDControl, tEnd, const); % Assuming you know xIC
+    measInnov = y - simData.x;
+
+    % Now every meas innov should be iid under error distribution
+    NTimes = size(y,2);
+    fY_Theta = 0;
+    n = const.nStates;
+    fY_Theta_i = zeros(NTimes,1);
+    for i = 1:NTimes
+        % Noise is MV gaussian
+        fY_Theta_i(i) = 1./((2*pi)^(n/2)*sqrt(det(CxxEstimator)))  * ...
+                exp(-1/2*(measInnov(:,i)'*inv(CxxEstimator)*measInnov(:,i)));
+        fY_Theta = fY_Theta + log(fY_Theta_i(i)); % product of iid distributions
+    end
+       
+end
+
+% Discrete Bayes Filter for a single trajectory
+function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fThetaPrior, PDControl, tEnd, const, xIC, CxxEstimator)
+    nTheta = numel(theta);
+    fTheta_Y = zeros(nTheta,1);
+    likelihoodVsTimeAndTheta = NaN(size(y,2), nTheta);
+    measInnov = NaN(size(y,1), size(y,2), nTheta);
+    for i = 1:nTheta
+        [logLikelihood, likelihoodVsTimeAndTheta(:,i), measInnov(:,:,i)] = fYgivenTheta(y, theta(i), PDControl, tEnd, const, xIC, CxxEstimator);
+        fTheta_Y(i) = logLikelihood + log(fThetaPrior(i));
+    end
+
+    % Normalize density
+    fTot = LogSumExp(fTheta_Y);
+    fTheta_Y = exp(fTheta_Y - fTot);
+    % % Old normalization
+    % fTheta_Y = fTheta_Y - max(fTheta_Y); % arbitrarily normalize to make exp less painful
+    % fY = sum(exp(fTheta_Y));
+    % 
+    % fTheta_Y = exp(fTheta_Y) ./ fY; 
 end
