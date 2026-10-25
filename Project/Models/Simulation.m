@@ -1,4 +1,4 @@
-function [simData] = Simulation(xIC, fController, tEnd)
+function [simData] = Simulation(xIC, fController, tEnd, const)
     %{
         xIC = initial state for simulation
         fController = function handler to a controller of the form:
@@ -8,8 +8,6 @@ function [simData] = Simulation(xIC, fController, tEnd)
             fController.
         tEnd = End time (s)
     %}
-
-    const = ModelParams();
 
     %% Data Packaging
     simData = struct();
@@ -43,16 +41,16 @@ function [simData] = Simulation(xIC, fController, tEnd)
     simData.u = NaN(const.nInputs,nTimes);
     simData.slackVar = NaN(nTimes,1);
     simData.qBar = NaN(nTimes,1);
-    % for i = 1:nTimes
-    %     Control Input
-    %     [simData.u(:,i)] = ...
-    %                 fController(simData.times(i), ...
-    %                             simData.x(:,i), const);
-    % 
-    %     % Qbar
-    %     rho = getAtmo(simData.x(end,i), const);
-    %     simData.qBar(i) = 0.5*rho*simData.x(1,i)^2;
-    % end
+    for i = 1:nTimes
+        %Control Input
+        [simData.u(:,i)] = ...
+                    fController(simData.times(i), ...
+                                simData.x(:,i), const);
+
+        % Qbar
+        rho = getAtmo(simData.x(end,i), const);
+        simData.qBar(i) = 0.5*rho*simData.x(1,i)^2;
+    end
 end
 
 %% Helpers
