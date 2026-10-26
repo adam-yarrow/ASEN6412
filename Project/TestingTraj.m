@@ -5,10 +5,10 @@ Startup();
 
 const = ModelParams();
 
-tEnd = 10;
+tEnd = 20;
 xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
-const.aero.fMakeStaticallyStable = false;
+const.controller.sysIDActive = true;
 PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));
 simData = Simulation(xIC, PDControl, tEnd, const);
 plotSimulationResults({simData}, {'test'});

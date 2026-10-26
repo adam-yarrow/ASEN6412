@@ -87,10 +87,13 @@ function [const] = ModelParams(varargin)
     const.aero.CM_deltaE = -1.2897; % rad^-1
     const.aero.CM_deltaC = kec * const.aero.CM_deltaE;
 
-    const.aero.fMakeStaticallyStable = true; 
+    const.aero.fMakeStaticallyStable = true; %% MUST BE TRUE OR ELSE YOU CRASH
 
     %% Constraints
     const.constraint.deltaEBounds = [-deg2rad(30), deg2rad(30)];
+
+    %% Controller
+    const.controller.sysIDActive = true;
 
      %% Pull out specific parameter if required
     nArgs = length(varargin);
