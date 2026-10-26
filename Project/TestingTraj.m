@@ -39,9 +39,9 @@ ylabel('f_{\theta|Y}')
 %% Bayesian estimation with random Cm_alpha
 CmalphaMin = 0.5*const.aero.CM_alpha;
 CmalphaMax = 1.5*const.aero.CM_alpha;
-nTheta = 200;
+nTheta = 50;
 theta = linspace(CmalphaMin, CmalphaMax, nTheta); % uniform grid of theta
-Ntrials = 100;
+Ntrials = 500;
 constTemp = const;
 sigmaCmAlpha = 0.2;
 fThetaPrior = ones(nTheta,1) ./ (CmalphaMax - CmalphaMin);
@@ -69,8 +69,34 @@ for i = 1:Ntrials
     wb = progressBar(i, Ntrials, t0, wb);
 end
 
+% Not sure if the best way to handle estimating the distribution of theta?
+% Could try to recursively fit a distribution based on the individual
+% estimates?
+
+[~, MAPidx] = max(fTheta_Yi);
+MAP = theta(MAPidx);
+
+figure();
+histogram(MAP,'Normalization','probability');
 
 
+% Assuming Gaussian
+muTheta = mean(MAP);
+varTheta = var(MAP);
+
+
+% Kind of like a gauss mixture?
+averagePDF = sum(fTheta_Yi,2) ./  Ntrials;
+%% IDEALLY Take this averaged pdf and use as a prior for the bayes filter above
+%% Then loop this process until the averaged PDF converges
+
+figure();
+plot(theta, averagePDF);
+hold on;
+plot(theta, normpdf(theta, muTheta, varTheta.^0.5));
+xlabel('Theta');
+ylabel('f_theta');
+legend('Averaged PDF','Gaussian MAP Approximation')
 
 
 
@@ -213,9 +239,13 @@ function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(t
         fTheta_Y(i) = logLikelihood + log(fThetaPrior(i));
     end
 
-    % Normalize density
+    % Convert From Log to Normal Domain
     fTot = LogSumExp(fTheta_Y);
     fTheta_Y = exp(fTheta_Y - fTot);
+
+    % Normalize into a Proper Density
+    fTheta_Y = trapz(theta, fTheta_Y);
+
     % % Old normalization
     % fTheta_Y = fTheta_Y - max(fTheta_Y); % arbitrarily normalize to make exp less painful
     % fY = sum(exp(fTheta_Y));
