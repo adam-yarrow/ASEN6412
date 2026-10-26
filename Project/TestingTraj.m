@@ -5,10 +5,11 @@ Startup();
 
 const = ModelParams();
 
-tEnd = 20;
+tEnd = 10;
 xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
-PDControl = @(t,x,const) BasicController(t,x,const);
+const.aero.fMakeStaticallyStable = false;
+PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));
 simData = Simulation(xIC, PDControl, tEnd, const);
 plotSimulationResults({simData}, {'test'});
 
@@ -47,7 +48,7 @@ sigmaCmAlpha = 0.2;
 fThetaPrior = ones(nTheta,1) ./ (CmalphaMax - CmalphaMin);
 fTheta_Yi = NaN(nTheta, Ntrials);
 tEnd = 5;
-CxxEstimator = 1*Sxx.^2;
+CxxEstimator = 1*Sxx.^2; % Allows for inflation if necessary
 t0 = tic;
 wb = progressBar(1, Ntrials, t0, [], 'MC Runs');
 cmAlphaDistrib = const.aero.CM_alpha + sigmaCmAlpha*randn(Ntrials,1);
@@ -108,7 +109,7 @@ legend('Averaged PDF','Gaussian MAP Approximation')
 
 
 %% Testing Stochastic Param
-PDControl = @(t,x,const) BasicController(t,x,const);
+PDControl = @(t,x,const) AlphaController(t,x,const);
 
 const = ModelParams();
 
@@ -177,32 +178,6 @@ plot(times, deltaE_Mean - sqrt(deltaE_Var));
 
 
 
-%% Controller
-function [u, exit] = BasicController(t,x,const)    
-    exit = 0;
-
-    f = 1/10;
-    omega = 2*pi*f;
-    A = deg2rad(10);
-    alphaDes = A * sin(omega*t);
-    alphaRateDes = -A*omega*cos(omega*t);
-
-    % Do alpha control
-    Kd = 20;
-    Kp = 60; % just a guess lol
-
-    alpha = calcAlpha(x);
-
-    % PD Controller
-    virtualElevator =  (-Kd*(x(3) - alphaRateDes) - Kp*(alpha - alphaDes));
-
-    % Saturation
-    deltaE_cmd = min(max(-virtualElevator, const.constraint.deltaEBounds(1)), ...
-                    const.constraint.deltaEBounds(2)); 
-        
-    % Build Inputs
-    u = [0; deltaE_cmd; 0]; % No engine and no canard
-end
 
 %% Discrete Bayes Filter Functions
 % now need likelihood function
@@ -243,8 +218,8 @@ function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(t
     fTot = LogSumExp(fTheta_Y);
     fTheta_Y = exp(fTheta_Y - fTot);
 
-    % Normalize into a Proper Density
-    fTheta_Y = trapz(theta, fTheta_Y);
+    % Normalize into a Proper Density (e.g. sums to 1.0)
+    fTheta_Y = fTheta_Y ./ trapz(theta, fTheta_Y);
 
     % % Old normalization
     % fTheta_Y = fTheta_Y - max(fTheta_Y); % arbitrarily normalize to make exp less painful

@@ -47,7 +47,7 @@ function [simData] = Simulation(xIC, fController, tEnd, const)
                     fController(simData.times(i), ...
                                 simData.x(:,i), const);
 
-        % Qbar
+        %Qbar
         rho = getAtmo(simData.x(end,i), const);
         simData.qBar(i) = 0.5*rho*simData.x(1,i)^2;
     end
