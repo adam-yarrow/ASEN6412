@@ -20,7 +20,7 @@ d = 2;
 xMax = 1;
 xMin = 0;
 Nx = 101; % From Previous HW3 solution
-x = linspace(xMin, xMax, Nx); % Fixed domain
+x = linspace(xMin, xMax, Nx)'; % Fixed domain
 
 % KLE Random Var Uniform Domain
 Ya = [-1, -1];
@@ -45,6 +45,18 @@ end
 meanKFunc = @(x) muK * ones(size(x));
 dataKLE = generateKLE_Struct(lambdaKxx, omegaKxx, meanKFunc, aKxx, d);
 
+% Generate Phi Matrix to save time for our grid
+dx = x(2) - x(1);
+x_itHalf = x - dx/2; 
+x_itHalf = x_itHalf(2:end); % First entry outside of domain -> remove
+
+% Pre-make eigenfunctions - I AM SPEED!
+% Eigenfunctions don't change between grids
+[phiMatrix] = MakePhiMatrix(x_itHalf, dataKLE);
+
+dataKLE.x_itHalf = x_itHalf;
+dataKLE.phiMatrix = phiMatrix;
+
 %% TODO - be careful because MonteCarloPDE assumes Gxx = exp(Kxx)
 warning('fix me');
 
@@ -53,7 +65,11 @@ warning('fix me');
 N_LHS = [1E1, 1E2, 1E3, 1E4, 1E5];
 NumLHS = numel(N_LHS);
 
+fPlotLHS = false;
+
 for iLHS = 1:NumLHS
-    Y_LHS = getLHS_SamplesUniformDist(N_LHS(iLHS), Ya, Yb);
-    
+    Y_LHS = getLHS_SamplesUniformDist(N_LHS(iLHS), Ya, Yb);     
+    [u, uStats] = MonteCarloPDE_HW4(x, uBC, N_LHS(iLHS), dataKLE, Y_LHS, fPlotLHS);
+
+    warning('TOdo - save data somewhere, and actually calculate stats')
 end
