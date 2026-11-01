@@ -1,4 +1,4 @@
-function [u, uStats] = MonteCarloPDE_HW4(x, uBC, Nmc, dataKLE, Y, fPlot)
+function [u, uStats] = MonteCarloPDE_HW4(x, uBC, Nmc, dataKLE, Y)
     %{
     Function to evaluation the MC approximation of the PDE for a fixed grid
     size.
@@ -32,11 +32,15 @@ function [u, uStats] = MonteCarloPDE_HW4(x, uBC, Nmc, dataKLE, Y, fPlot)
         u(:,i) = PDE_Solution(uBC, KipHalf_vs_x, KitHalf_vs_x, dx);
     end
 
+    %% Generate Statistics
+    [muU, varU] = CumulativeStats(u, Nmc);
+    xHalfIdx = find(x == 0.5); %% Brittle - fix
+
     % TODO - extract stats   
     uStats = struct();
+    uStats.mu = muU;
+    uStats.var = varU;
+    uStats.muAtXhalf = muU(xHalfIdx, :);
+    uStats.varAtXhalf = varU(xHalfIdx, :);
 
-    % TODO - plotting
-    if fPlot
-
-    end
 end

@@ -2,7 +2,7 @@
     TODO - readme
 %}
 %% Startup
-addpath('../KLE');
+addpath(genpath('..\..\Library\'));
 
 % Fix random seed for repeatability
 rng(30102026);
@@ -67,9 +67,11 @@ NumLHS = numel(N_LHS);
 
 fPlotLHS = false;
 
+uLHS = cell(NumLHS,1);
+uStatsLHS = cell(NumLHS,1);
+
 for iLHS = 1:NumLHS
     Y_LHS = getLHS_SamplesUniformDist(N_LHS(iLHS), Ya, Yb);     
-    [u, uStats] = MonteCarloPDE_HW4(x, uBC, N_LHS(iLHS), dataKLE, Y_LHS, fPlotLHS);
-
-    warning('TOdo - save data somewhere, and actually calculate stats')
+    [uLHS{1}, uStats{1}] = MonteCarloPDE_HW4(x, uBC, N_LHS(iLHS), ...
+                            dataKLE, Y_LHS, fPlotLHS);
 end
