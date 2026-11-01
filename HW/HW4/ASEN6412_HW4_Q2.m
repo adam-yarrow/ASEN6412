@@ -57,9 +57,6 @@ x_itHalf = x_itHalf(2:end); % First entry outside of domain -> remove
 dataKLE.x_itHalf = x_itHalf;
 dataKLE.phiMatrix = phiMatrix;
 
-%% TODO - be careful because MonteCarloPDE assumes Gxx = exp(Kxx)
-warning('fix me');
-
 
 %% LHS Solution - <u(x)> and var(u(x))
 N_LHS = [1E1, 1E2, 1E3, 1E4, 1E5];
@@ -72,6 +69,38 @@ uStatsLHS = cell(NumLHS,1);
 
 for iLHS = 1:NumLHS
     Y_LHS = getLHS_SamplesUniformDist(N_LHS(iLHS), Ya, Yb);     
-    [uLHS{1}, uStats{1}] = MonteCarloPDE_HW4(x, uBC, N_LHS(iLHS), ...
-                            dataKLE, Y_LHS, fPlotLHS);
+    [uLHS{iLHS}, uStatsLHS{iLHS}] = MonteCarloPDE_HW4(x, uBC, N_LHS(iLHS), ...
+                            dataKLE, Y_LHS);
+
 end
+
+%% LHS - Plotting
+figure('Name','Mean and Var Response');
+h1 = subplot(2,1,1);
+grid on;
+hold on;
+xlabel('x');
+ylabel('E[u(x)]');
+
+h2 = subplot(2,1,2);
+grid on;
+hold on;
+xlabel('x');
+ylabel('Var(u(x))');
+
+for iLHS = 1:NumLHS
+    currentName = sprintf('N = 1E%i',log10(N_LHS(iLHS)));
+    plot(h1, x, uStatsLHS{iLHS}.mu(:,end),'DisplayName',...
+        currentName);
+    plot(h2, x, uStatsLHS{iLHS}.var(:,end),'DisplayName',...
+        currentName);
+end
+
+sgtitle('Mean and Variance of u(x) for different N_{LHS} Points')
+legend(h1);
+legend(h2);
+
+
+
+
+

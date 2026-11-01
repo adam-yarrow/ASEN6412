@@ -1,4 +1,4 @@
-function [u] = HarmonicPDE_Solution(uBC, KipHalf, KitHalf, h)
+function [u] = PDE_Solution(uBC, KipHalf, KitHalf, h)
 %{
     Solves the 1D heat diffusion PDE for HW3 using flux form:
     d/dx(K(x) * d/dx(u(x)) = 1
