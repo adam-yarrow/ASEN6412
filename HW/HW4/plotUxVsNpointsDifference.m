@@ -1,8 +1,4 @@
-function plotUxVsNpointsDifference(titleName, x, muU, varU, Npoints, fUseLogPoints)
-    %{ 
-        NOTE: treats the last entry (largest Npoints) as the reference
-    %}
-
+function plotUxVsNpointsDifference(titleName, x, muU, varU, muUref, varUref, Npoints, fUseLogPoints)
     figure('Name',sprintf('Difference - Mean and Var Response - %s', titleName));
     h1 = subplot(2,1,1);
     grid on;
@@ -16,7 +12,7 @@ function plotUxVsNpointsDifference(titleName, x, muU, varU, Npoints, fUseLogPoin
     xlabel('x');
     ylabel('log_{10}(Var(u(x)) - Var(u_{ref}(x)))');
     
-    for i = 1:numel(Npoints) - 1
+    for i = 1:numel(Npoints)
 
         if fUseLogPoints
             currentName = sprintf('N = 1E%i',log10(Npoints(i)));
@@ -24,9 +20,9 @@ function plotUxVsNpointsDifference(titleName, x, muU, varU, Npoints, fUseLogPoin
             currentName = sprintf('N = %i',Npoints(i));
         end
 
-        plot(h1, x, log10(abs(muU(:,i) - muU(:,end))) ,'DisplayName',...
+        plot(h1, x, log10(abs(muU(:,i) - muUref)) ,'DisplayName',...
             currentName);
-        plot(h2, x, log10(abs(varU(:,i) - varU(:,end))),'DisplayName',...
+        plot(h2, x, log10(abs(varU(:,i) - varUref)),'DisplayName',...
             currentName);
     end
     
