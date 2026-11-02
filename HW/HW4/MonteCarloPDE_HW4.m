@@ -33,14 +33,11 @@ function [u, uStats] = MonteCarloPDE_HW4(x, uBC, Nmc, dataKLE, Y)
     end
 
     %% Generate Statistics
-    [muU, varU] = CumulativeStats(u, Nmc);
     xHalfIdx = find(x == 0.5); %% Brittle - fix
-
-    % TODO - extract stats   
     uStats = struct();
-    uStats.mu = muU;
-    uStats.var = varU;
-    uStats.muAtXhalf = muU(xHalfIdx, :);
-    uStats.varAtXhalf = varU(xHalfIdx, :);
+    uStats.mu = mean(u, 2);
+    uStats.var = var(u, [], 2);
+    uStats.muAtXhalf = uStats.mu(xHalfIdx, :);
+    uStats.varAtXhalf = uStats.var(xHalfIdx, :);
 
 end
