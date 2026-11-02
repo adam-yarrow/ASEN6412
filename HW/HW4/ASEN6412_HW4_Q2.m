@@ -188,7 +188,36 @@ plotErrConvergence(errNames, errNsamples, varErr, 'log_{10}(|Var(u) - \sigma_{re
 
 
 %% Calculate min{d} required to obtain same MSE with l = 0.1
-%% TODO 
+lambdaOptions = struct();
+lambdaOptions.mode = 'approximate';
+lambdaOptions.k = 200; % Assuming 100 eigenvalues beyond current eval adequate
+lambdaOptions.maxIts = 100;
+lambdaOptions.fPlot = true;
+
+truncErrorMSEGuess = 0.01; % Some small value to get lots of evals
+
+[~, lambdaOrig, ~] = findMinNumLambdaKLE(truncErrorMSEGuess, ...
+                                            aKxx, lKxx, sigmaKxx, lambdaOptions);
+
+
+% What number of lambda do we need to achieve the same MSE approximation as
+% the d = 2 case?
+truncErrorExact = 1 - (lambdaOrig(1) + lambdaOrig(2)) / sum(lambdaOrig);
+[dSmallL, lambdaSmallL, ~] = findMinNumLambdaKLE(truncErrorExact, ...
+                                            aKxx, 0.1, sigmaKxx, lambdaOptions);
+
+% Plot E-vals together to show impact
+figure('Name','Impact of Correlation Length');
+semilogy(1:numel(lambdaOrig), lambdaOrig ./ sum(lambdaOrig),'r.','MarkerSize',8);
+hold on;
+semilogy(1:numel(lambdaSmallL), lambdaSmallL ./ sum(lambdaSmallL),'b.','MarkerSize',8);
+grid on;
+xlabel('i','FontSize',14)
+txt = '$\lambda_i $ / $ \sum_{j=1}^{k}\lambda_j$';
+ylabel(txt,'Interpreter','latex','FontSize',14);
+title('Normalized Eigenvalues vs Mode Number','FontSize',14)
+legend('l = 2','l = 0.1');
+
 
 
 %% Helper Functions
