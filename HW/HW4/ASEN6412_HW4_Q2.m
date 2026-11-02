@@ -73,12 +73,11 @@ mu_MC = NaN(Nx, NumMC);
 var_MC = NaN(Nx, NumMC);
 
 for iMC = 1:NumMC
-    Y_MC = Ya' + (Yb - Ya)'.*rand(1, N_MC(iMC));
+    Y_MC = Ya' + (Yb - Ya)'.*rand(2, N_MC(iMC));
     [uMC{iMC}, uStatsMC{iMC}] = MonteCarloPDE_HW4(x, uBC, N_MC(iMC), ...
                             dataKLE, Y_MC);
     mu_MC(:,iMC) = uStatsMC{iMC}.mu;
     var_MC(:,iMC) = uStatsMC{iMC}.var;
-
 end
 
 % Plotting
