@@ -144,12 +144,6 @@ end
 plotUxVsNpoints('CC - Stochastic Collocation', x, mu_CC, var_CC, N_levels, false);
 plotUxVsNpointsDifference('CC - Stochastic Collocation', x, mu_CC, var_CC, N_levels, false);
 
-%% Test weighting first - e.g. integrate a constant function and see if it scales correctly with my algo
-
-
-
-
-
 %% Stochastic Collocation - Smolyak
 
 
