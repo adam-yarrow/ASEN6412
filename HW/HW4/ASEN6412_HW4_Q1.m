@@ -1,5 +1,5 @@
 %% Plots tensor product grids
-addpath("..\..\ProfCodes\")
+addpath(genpath("..\..\Library\"))
 
 %% Make 1D Grids
 level = [0, 1, 2, 3, 4];
@@ -59,11 +59,38 @@ for prodI = 1:numel(tensorProdY1)
 end
 
 %% Check full product correct
+finalGrid = tensorProdStoragePos;
+tol = 1E-8;
+for iNeg = 1:size(tensorProdStorageNeg,1)
+    foundIdx = tolerancedFind(finalGrid, tensorProdStorageNeg(iNeg,:), tol);
 
-%% TODO - verify if time
-% totalY1 = [];
-% totalY2 = [];
-% for i = 9:-1:1
-%     totalY = tensorProdStorage
-% end
+    if ~isempty(foundIdx)
+        finalGrid(foundIdx, :) = [];
+    else
+        error('Cant subtract something that doesnt exist');
+    end
+end
+
+figure('Name','Verify Solution')
+plot(finalGrid(:,1), finalGrid(:,2), 'r.', 'MarkerSize',10);
+grid on;
+xlabel('y_1');
+ylabel('y_2');
+title('Combined Sparse Grid');
+xlim([-1,1]);
+ylim([-1,1]);
+
+%% helper function
+function foundIdx = tolerancedFind(src, target, tol)
+    % Finds target idx within src vector 
+    % Assumes src = N x 2
+    % Assumes target = 1 x 2
+
+    srcDiff = NaN(size(src));
+    srcDiff(:,1) = abs(src(:,1) - target(1));
+    srcDiff(:,2) = abs(src(:,2) - target(2));
+
+    condition = srcDiff(:,1) < tol & srcDiff(:,2) < tol;
+    foundIdx = find(condition, 1,"first");
+end
 

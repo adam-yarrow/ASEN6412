@@ -115,6 +115,7 @@ plotUxVsNpointsDifference('LHS', x, mu_LHS(:,1:end-1), var_LHS(:,1:end-1), ...
 levels_CC = [0, 1, 2, 3, 4, 5];
 lRefIdx_CC = 6; % Corresponds to N = 33 points
 N_levels_CC = [1, 2.^levels_CC(2:end) + 1];
+Nsamples_CC = N_levels_CC.^2;
 NumLevels_CC = numel(levels_CC);
 
 % Pre - Build Flattened Tensor Points
@@ -140,10 +141,10 @@ muRef = mu_CC(:,lRefIdx_CC);
 varRef = var_CC(:,lRefIdx_CC);
 
 % Plotting
-plotUxVsNpoints('CC - Stochastic Collocation', x, mu_CC, var_CC, N_levels_CC, false);
+plotUxVsNpoints('CC - Stochastic Collocation', x, mu_CC, var_CC, Nsamples_CC, false);
 plotUxVsNpointsDifference('CC - Stochastic Collocation', x, ...
                             mu_CC(:,1:end-1), var_CC(:,1:end-1), ...
-                            muRef, varRef, N_levels_CC(1:end-1), false);
+                            muRef, varRef, Nsamples_CC(1:end-1), false);
 
 %% Stochastic Collocation - Smolyak
 levels_SCC = [1, 2, 3, 4, 5, 6, 7];
@@ -177,7 +178,7 @@ varErr = getLogAbsErr(var_MC, var_LHS, var_CC, var_SCC, varRef, xHalfIdx);
 
 % Plotting
 errNames = {'MC','LHS','Clenshaw-Curtis','Smolyak Sparse Grid'};
-errNsamples = {N_MC, N_LHS, N_levels_CC, N_levels_SCC};
+errNsamples = {N_MC, N_LHS, Nsamples_CC, N_levels_SCC};
 % errAccLevels = {[],[],levels_CC,levels_SCC};
 
 figure('Name','Convergence Rate of Algorithms');
