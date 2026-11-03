@@ -1,7 +1,7 @@
 function [u, uStats] = MonteCarloPDE_HW4(x, uBC, Nmc, dataKLE, Y)
     %{
     Function to evaluation the MC approximation of the PDE for a fixed grid
-    size.
+    size for HW4
 
     x = grid to evaluate over
     Nmc = Number of monte-carlo runs

@@ -1,4 +1,10 @@
 function plotUxVsNpointsDifference(titleName, x, muU, varU, muUref, varUref, Npoints, fUseLogPoints)
+    %{
+        This plots the difference in the mean and variance response of u(x) 
+        for different number of integration or MC points relative to a
+        provided reference solution.
+    %}
+
     figure('Name',sprintf('Difference - Mean and Var Response - %s', titleName));
     h1 = subplot(2,1,1);
     grid on;

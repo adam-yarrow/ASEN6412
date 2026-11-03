@@ -1,3 +1,10 @@
+%{
+    Running this function generates the tensor grids associated with the
+    generation of the smolyak sparse CC grid from HW4 Q1.
+
+    NOTE: The library path contains the codes posted on CANVAS.
+%}
+
 %% Plots tensor product grids
 addpath(genpath("..\..\Library\"))
 

@@ -1,5 +1,9 @@
 %{
-    TODO - readme
+    Running this script executes the code necessary to generate all plots
+    for HW4 Q2.
+
+    The library path includes all codes from CANVAS plus my KLE solver from
+    HW2.
 %}
 %% Startup
 addpath(genpath('..\..\Library\'));

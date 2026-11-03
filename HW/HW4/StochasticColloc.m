@@ -1,6 +1,9 @@
 function [muU, varU] = StochasticColloc(Y_Tensors, W_Tensor, Nx, uBC, ...
     dataKLE, dx, integrationSF)
     %{
+        This function runs stochastic collocation on the PDE problem from
+        HW4.
+        
         Y_Tensors = cell array (NumLevels x 1) of KLE random variables for
         each stochastic collocation level.
     

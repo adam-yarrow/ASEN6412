@@ -1,5 +1,8 @@
 function plotUxVsNpoints(titleName, x, muU, varU, Npoints, fUseLogPoints)
-   
+    %{
+        This plots the mean and variance response of u(x) for different
+        number of integration or MC points.
+    %}
     figure('Name',sprintf('Mean and Var Response - %s', titleName));
     h1 = subplot(2,1,1);
     grid on;
