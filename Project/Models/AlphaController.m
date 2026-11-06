@@ -5,7 +5,7 @@ function [u, exit] = AlphaController(t, x, const, fRefAlpha)
     exit = 0;
 
     % PD Controller
-    if ~const.controller.sysIDActive 
+    if ~const.controller.sysID.fActive 
         [alphaDes, alphaRateDes] = fRefAlpha(t);
     
         % Do alpha control
@@ -18,10 +18,11 @@ function [u, exit] = AlphaController(t, x, const, fRefAlpha)
         virtualElevator =  (-Kd*(x(3) - alphaRateDes) - Kp*(alpha - alphaDes));
 
     else
+        sysId = const.controller.sysID;
         % Injecting Elevator Doublet
-        if t <= 0.1
+        if t <= sysId.duration
             virtualElevator = const.constraint.deltaEBounds(1);
-        elseif t> 0.1  && t < 0.2
+        elseif t > sysId.duration  && t < 2*sysId.duration
             virtualElevator = const.constraint.deltaEBounds(2);
         else
             virtualElevator = 0;
@@ -33,6 +34,6 @@ function [u, exit] = AlphaController(t, x, const, fRefAlpha)
                     const.constraint.deltaEBounds(2)); 
        
     % Build Inputs
-    u = [0; deltaE_cmd; 0]; % No engine and no canard
+    u = deltaE_cmd;
 
 end

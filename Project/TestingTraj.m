@@ -11,7 +11,11 @@ xIC = [1500; 0; 0; 0; 28000]; % Guess
 const.controller.sysIDActive = true;
 PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));
 simData = Simulation(xIC, PDControl, tEnd, const);
-plotSimulationResults({simData}, {'test'});
+
+const.aero.dynDeriv.model = 'static';
+simData_CmqOn = Simulation(xIC, PDControl, tEnd, const);
+
+plotSimulationResults({simData,simData_CmqOn}, {'Cmq - OFF','Cmq - STATIC'});
 
 
 %% Discrete Bayes filter for 1 variable on Basic Test

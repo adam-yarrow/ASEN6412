@@ -69,7 +69,7 @@ ax.FontSize = 12;
 %% Control Inputs
 figure('Name',sprintf('Control inputs'));
 hold on;
-iInput = 2;
+iInput = 1;
 plotState(simDataCell, 'u', iInput, simNames, const.inputNames{iInput},...
             const.inputPlottingUnits{iInput}, const.inputPlottingSF(iInput),[]);
 grid on;   

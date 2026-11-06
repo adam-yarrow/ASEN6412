@@ -23,7 +23,7 @@ function [simData] = Simulation(xIC, fController, tEnd, const)
     else
         xResults(1,:) = xIC';
         xk = xIC;
-        u = zeros(3,1);
+        u = zeros(1,1); % Default if controller fails
         for k=2:nTimes
             tkprev = simData.times(k-1);
             tk = simData.times(k);
