@@ -20,8 +20,6 @@ function plotStateMoments(const, times, xStats, alphaStats)
         ax.LineWidth = 2;  % Thicker axes
         ax.FontSize = 12;
     end
-
-    warning('TODO - plot alpha once get stats for it')
     
     % Alpha
     hStates(end+1) = subplot(2,3,6);

@@ -10,6 +10,7 @@ function [pathsToPerturb, stochasticParam] = ForwardUqPerturbationVars()
                        'xIC.theta',...
                        'xIC.h'};
 
+    warning('How do i handle the fact distributions might be coupled?')
 
     % Specify Random Variable Distributions
     CMq.distribution = 'uniform';
