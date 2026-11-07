@@ -34,7 +34,7 @@ function [pathsToPerturb, stochasticParam] = ForwardUqPerturbationVars()
     % h.max = 28500;
     h.distribution = 'trunc-gaussian';
     h.mean = 28000;
-    h.sigma = 500/3; % 3-sigma 
+    h.sigma = 500/3; % 3-sigma = 500 m/s
     h.truncatedSigmaLevel = 3;
 
     stochasticParam = {CMq, V, theta, h};

@@ -25,9 +25,15 @@ figure('Name',sprintf('Dynamic Pressure'));
 hold on;
 for iTraj = 1:nTraj
     simData = simDataCell{iTraj};
-    plot(simData.times, simData.qBar/1000,'DisplayName',simNames{iTraj},'LineWidth',1.5);
+    if ~isempty(simNames)
+        plot(simData.times, simData.qBar/1000,'DisplayName',simNames{iTraj},'LineWidth',1.5);
+    else
+        plot(simData.times, simData.qBar/1000,'LineWidth',1.5);
+    end
 end
-legend();
+if ~isempty(simNames)
+    legend();
+end
 xlabel('Time (s)');
 ylabel('Dynamic Pressure (kPa)');
 grid on;
@@ -79,7 +85,9 @@ end
 xlabel('Time (s)');
 ylabel(sprintf('%s (%s)', 'Alpha', 'deg'));
 grid on;   
-legend(simNames{:});
+if ~isempty(simNames)
+    legend(simNames{:});
+end
 ax = gca;
 ax.LineWidth = 2;  % Thicker axes
 ax.FontSize = 12;
@@ -96,7 +104,11 @@ function plotState(simDataCell, dataName, stateIdx, simNames, stateName, stateUn
         simData = simDataCell{iTraj};
         data = simData.(dataName)(stateIdx,:);
         t = simData.times;
-        plot(t,data*SF,'DisplayName',simNames{iTraj},'LineWidth',1.5);
+        if ~isempty(simNames)
+            plot(t,data*SF,'DisplayName',simNames{iTraj},'LineWidth',1.5);
+        else
+            plot(t,data*SF,'LineWidth',1.5);
+        end
     end
 
     if ~isempty(xr)
@@ -106,7 +118,9 @@ function plotState(simDataCell, dataName, stateIdx, simNames, stateName, stateUn
     xlabel('Time (s)');
     ylabel(sprintf('%s (%s)', stateName, stateUnits));
     grid on;  
-    legend();
+    if ~isempty(simNames)
+        legend();
+    end
     ax = gca;
     ax.LineWidth = 2;  % Thicker axes
     ax.FontSize = 12;
