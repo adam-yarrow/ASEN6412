@@ -13,7 +13,7 @@ function plotStateMoments(const, times, xStats, alphaStats)
         
         legend();
         xlabel('Time (s)');
-        ylabel(sprintf('%s (%s)', const.stateNames{iState}, const.stateUnits{iState}));
+        ylabel(sprintf('%s (%s)', const.stateNames{iState}, const.statePlottingUnits{iState}));
         grid on;  
         legend();
         ax = gca;

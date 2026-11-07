@@ -52,8 +52,6 @@ for iMC = 1:Nmc
 
     % Progress bar
     progressBar(iMC, Nmc, t0, wb);
-
-    %% TODO - maybe cumulative statistics to show convergence?
 end
 
 % Calculate Statistics
@@ -61,6 +59,10 @@ end
 
 % Plotting State Stats vs Time
 plotStateMoments(const, times, xStats, alphaStats);
+
+% Plotting State Convergence At End time
+tToPlotIdx = find(times == const.tEnd);
+plotConvergenceOfStateMoments(const, tToPlotIdx, xStats, alphaStats, Nmc);
 
 
 

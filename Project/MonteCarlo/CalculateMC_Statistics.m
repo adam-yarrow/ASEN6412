@@ -29,8 +29,8 @@ function [xStats, alphaStats] = CalculateMC_Statistics(xStorage, alphaStorage)
         end
 
         localAlpha = alphaStorage(:,1:i);
-        alphaStats.mean = mean(localAlpha,2);
-        alphaStats.var = var(localAlpha,0,2);
+        alphaStats.mean(:,i) = mean(localAlpha,2);
+        alphaStats.var(:,i) = var(localAlpha,0,2);
         
     end
 
