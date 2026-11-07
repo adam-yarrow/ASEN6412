@@ -1,4 +1,4 @@
-function plotSimulationResults(simDataCell,simNames, refTrajFunc, P)
+function plotSimulationResults(simDataCell,simNames, refTrajFunc)
 %{
     Plots the simulation response.
     simData can be a cell array
@@ -8,7 +8,6 @@ const = ModelParams();
 
 if nargin < 3
     refTrajFunc = [];
-    P = [];
 end
 
 %% Ref Traj
@@ -19,35 +18,6 @@ else
 end
 
 nTraj = length(simDataCell);
-
-
-%% Lyapunov Function
-if ~isempty(P)
-
-    figure('Name',sprintf('Lyapunov Function'));
-    hold on;
-    for iTraj = 1:nTraj
-        simData = simDataCell{iTraj};
-        nTimes = length(simData.times);
-    
-        zStateIdx = const.clf.errorStateIdx;
-        z = simData.x(zStateIdx,:) - xr(zStateIdx,:);
-        V = NaN(nTimes,1);
-        for iTime = 1:numel(simData.times)
-            V(iTime) = z(:,iTime)'*P*z(:,iTime);
-        end    
-        plot(simData.times, V,'DisplayName',simNames{iTraj},'LineWidth',1.5);
-    end
-    legend();
-    xlabel('Time (s)');
-    ylabel('V(x(t))');
-    grid on;
-    title(sprintf('V vs Time'));    
-    ax = gca;
-    ax.LineWidth = 2;  % Thicker axes
-    ax.FontSize = 12;
-end
-
 
 
 %% Dynamic pressure

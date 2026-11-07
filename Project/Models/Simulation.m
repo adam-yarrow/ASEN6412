@@ -1,18 +1,22 @@
-function [simData] = Simulation(xIC, fController, tEnd, const)
+function [simData] = Simulation(fController, const)
     %{
-        xIC = initial state for simulation
         fController = function handler to a controller of the form:
             u = f(t,x,const), where x = state of vehicle (V, gamma, q, theta,
-            height), u = [phi, deltaE, deltaC], const=ModelParams(). Using time as an option too
+            height), u = [deltaE], const=ModelParams(). Using time as an option too
             in case trying to track a reference trajectory embedded in
             fController.
-        tEnd = End time (s)
     %}
+    xIC = [const.xIC.V;
+           const.xIC.gamma;
+           const.xIC.q;
+           const.xIC.theta;
+           const.xIC.h];
 
     %% Data Packaging
     simData = struct();
-    simData.times = 0:const.dT:tEnd;
+    simData.times = 0:const.dT:const.tEnd;
     nTimes = numel(simData.times);
+
 
     %% Run Sim
     xResults = zeros(nTimes, const.nStates);

@@ -1,4 +1,3 @@
-addpath('Models');
-addpath('Plotting');
+addpath(genpath(pwd))
 addpath(genpath('..\Library'))
 

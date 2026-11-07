@@ -5,15 +5,14 @@ Startup();
 
 const = ModelParams();
 
-tEnd = 20;
 xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
 const.controller.sysIDActive = true;
 PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));
-simData = Simulation(xIC, PDControl, tEnd, const);
+simData = Simulation(xIC, PDControl, const);
 
 const.aero.dynDeriv.model = 'static';
-simData_CmqOn = Simulation(xIC, PDControl, tEnd, const);
+simData_CmqOn = Simulation(xIC, PDControl, const);
 
 plotSimulationResults({simData,simData_CmqOn}, {'Cmq - OFF','Cmq - STATIC'});
 
@@ -51,7 +50,7 @@ constTemp = const;
 sigmaCmAlpha = 0.2;
 fThetaPrior = ones(nTheta,1) ./ (CmalphaMax - CmalphaMin);
 fTheta_Yi = NaN(nTheta, Ntrials);
-tEnd = 5;
+constTemp.tEnd = 5;
 CxxEstimator = 1*Sxx.^2; % Allows for inflation if necessary
 t0 = tic;
 wb = progressBar(1, Ntrials, t0, [], 'MC Runs');
@@ -59,7 +58,7 @@ cmAlphaDistrib = const.aero.CM_alpha + sigmaCmAlpha*randn(Ntrials,1);
 for i = 1:Ntrials    
     % Make Random CM Alpha
     constTemp.aero.CM_alpha = cmAlphaDistrib(i);
-    simData_i = Simulation(xIC, PDControl, tEnd, constTemp);
+    simData_i = Simulation(xIC, PDControl, constTemp);
 
     % Make measurements
     randVars = randn(size(simData_i.x));
@@ -159,7 +158,7 @@ for i = 1:Nsims
 
     xICTemp(4) = alpha0(i) + gamma0;
 
-    simDataTemp = Simulation(xICTemp, PDControl, tEnd, constTemp);
+    simDataTemp = Simulation(xICTemp, PDControl, constTemp);
     
     % Pull Useful data
     deltaE_N(:,i) = simDataTemp.u(2,:);
@@ -190,7 +189,7 @@ function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl,
   
     % Run simulation using theta_i parameter
     const.aero.CM_alpha = theta_i; 
-    [simData] = Simulation(xIC, PDControl, tEnd, const); % Assuming you know xIC
+    [simData] = Simulation(xIC, PDControl, const); % Assuming you know xIC
     measInnov = y - simData.x;
 
     % Now every meas innov should be iid under error distribution

@@ -19,14 +19,25 @@ function [u, exit] = AlphaController(t, x, const, fRefAlpha)
 
     else
         sysId = const.controller.sysID;
-        % Injecting Elevator Doublet
-        if t <= sysId.duration
-            virtualElevator = const.constraint.deltaEBounds(1);
-        elseif t > sysId.duration  && t < 2*sysId.duration
-            virtualElevator = const.constraint.deltaEBounds(2);
-        else
-            virtualElevator = 0;
-        end
+        
+        switch sysId.mode
+            case 'step'
+                % Injecting Elevator Doublet
+                if t <= sysId.duration
+                    virtualElevator = const.constraint.deltaEBounds(1);
+                elseif t > sysId.duration  && t < 2*sysId.duration
+                    virtualElevator = const.constraint.deltaEBounds(2);
+                else
+                    virtualElevator = 0;
+                end
+            case 'sine'
+                if t <= sysId.sineDuration
+                    A = abs(const.constraint.deltaEBounds(1));
+                    virtualElevator =  A*sin(2*pi*sysId.sineFreq*t);                  
+                else
+                    virtualElevator = 0;
+                end
+        end        
     end
 
     % Saturation

@@ -7,6 +7,7 @@ function [const] = ModelParams(varargin)
     const = struct();
 
     const.dT = 1E-2;
+    const.tEnd = 20;
     const.continuous = true;
     
     const.nStates = 5;
@@ -84,7 +85,19 @@ function [const] = ModelParams(varargin)
 
     %% Controller
     const.controller.sysID.fActive = true;
-    const.controller.sysID.duration = 0.1; % s
+    const.controller.sysID.mode = 'sine'; % {'step','sine'}
+    const.controller.sysID.stepDuration = 0.1; % s
+    const.controller.sysID.sineDuration = 3; % s
+    const.controller.sysID.sineFreq = 1; % Hz
+
+    %% Initial Conditions
+    const.xIC.V =  1500;
+    const.xIC.gamma = 0; 
+    const.xIC.q = 0;
+    const.xIC.theta = 0;
+    const.xIC.h = 28000;
+
+
 
      %% Pull out specific parameter if required
     nArgs = length(varargin);
