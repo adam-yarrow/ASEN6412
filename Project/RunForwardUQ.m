@@ -64,11 +64,6 @@ plotStateMoments(const, times, xStats, alphaStats);
 tToPlotIdx = find(times == const.tEnd);
 plotConvergenceOfStateMoments(const, tToPlotIdx, xStats, alphaStats, Nmc);
 
-
-
-
-% Plot Statistical Results?
-
 %TODO - plot convergence of final state for variables of interest and
 %variance - can i plot 3D confidence ellipses over the trajectory?
 

@@ -25,7 +25,7 @@ function plotStateMoments(const, times, xStats, alphaStats)
     hStates(end+1) = subplot(2,3,6);
     hold on;
     stateSF = rad2deg(1);
-    sigma = alphaStats.var.^0.5;
+    sigma = alphaStats.var(:,end).^0.5;
     plot(times, stateSF*alphaStats.mean(:,end),'k','DisplayName','\mu');
     plot(times, stateSF*(alphaStats.mean(:,end) - sigma),'r--','DisplayName','\mu - 1\sigma');
     plot(times, stateSF*(alphaStats.mean(:,end) + sigma),'b--','DisplayName','\mu + 1\sigma');

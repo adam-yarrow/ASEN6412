@@ -1,0 +1,4 @@
+Very fast generator of vectors from the standard multivariate normal or Gaussian distribution, truncated over the region [l,u]. The generator is designed for both speed and accuracy --- especially in the tail of the normal distribution, where the inverse transform method frequently breaks down due to underflow errors.  
+Reference: Botev, Z. I. (2016). "The normal law under linear restrictions: simulation and estimation via minimax tilting". Journal of the Royal Statistical Society: Series B (Statistical Methodology). doi:10.1111/rssb.12162
+
+For more information, see: [https://en.wikipedia.org/wiki/Truncated\_normal\_distribution](https://en.wikipedia.org/wiki/Truncated_normal_distribution)

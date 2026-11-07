@@ -21,7 +21,11 @@ function [stochasticValues, rawParams] = DrawRandomVariables(stochasticParams, n
             case 'uniform'
                 rawParams{iParam} = param.min + (param.max - param.min)*rand(nSamples,1);
             case 'gaussian'
-                error('TODO');
+                rawParams{iParam} = param.mean + param.sigma * randn(nSamples, 1);
+            case 'trunc-gaussian'
+                x = trandn(-param.truncatedSigmaLevel*ones(nSamples,1), ...
+                            param.truncatedSigmaLevel*ones(nSamples,1));
+                rawParams{iParam} = param.mean + param.sigma*x;
         end
     end
  
