@@ -23,6 +23,8 @@ function [stochasticValues, rawParams] = DrawRandomVariables(stochasticParams, n
             case 'gaussian'
                 rawParams{iParam} = param.mean + param.sigma * randn(nSamples, 1);
             case 'trunc-gaussian'
+                % https://en.wikipedia.org/wiki/Truncated_normal_distribution
+                % https://www.mathworks.com/matlabcentral/fileexchange/53180-truncated-normal-generator/files/trandn.m
                 x = trandn(-param.truncatedSigmaLevel*ones(nSamples,1), ...
                             param.truncatedSigmaLevel*ones(nSamples,1));
                 rawParams{iParam} = param.mean + param.sigma*x;

@@ -1,5 +1,5 @@
 function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,...
-    pathsToPerturb,stochasticParam)
+    stochasticParam)
     %{
         This function runs a MC simulation to estimate the trajectory
         statistics and forward UQ.
@@ -7,8 +7,6 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         const = baseline parameter set
         Nmc = Number of MC simulations to run
         controller = annonymous function representing the controller
-        pathsToPerturb = cell array containing the paths to the variables
-        in const to perturb stochastically
         stochasticParam = cell array of structs defining how to perturb the
         parameters in the model.
     %}
@@ -18,6 +16,9 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
     xStorage = NaN(const.nStates, nTimes, Nmc);
     uStorage = NaN(nTimes, Nmc);
     alphaStorage = NaN(nTimes, Nmc);
+
+    % Paths to perturb
+    pathsToPerturb = cellfun(@(x) x.path, stochasticParam, 'UniformOutput', false);
     
     % Generate Random Inputs for each MC case
     [stochasticValues, rawStochasticValues] = DrawRandomVariables(stochasticParam, Nmc);
