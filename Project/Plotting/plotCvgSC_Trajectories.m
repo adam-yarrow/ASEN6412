@@ -1,7 +1,7 @@
 function plotCvgSC_Trajectories(const, times, xStats, alphaStats, fLogDiff, ...
             cvglevelNames, dataNameState, dataNameAlpha)
 
-figure('Name',sprintf('States'));
+figure('Name',sprintf('Convergence in Trajectories - State %s', dataNameState));
 hStates = [];
 for iState = 1:const.nStates
     hStates(end+1) = subplot(2,3,iState);
@@ -34,7 +34,7 @@ end
 
 xlabel('Time (s)');
 if fLogDiff
-    ylabel(sprintf('log_{10}(|%s - %s_{ref}|)', '\alpha', '\alpha'));
+    ylabel(sprintf('log_{10}(|(%s - %s_{ref})/%s_{ref}|)', '\alpha','\alpha', '\alpha'));
 else
     if strcmpi(dataNameAlpha,'mean')
         ylabel(sprintf('%s (%s)', '\alpha', 'deg'));
@@ -53,8 +53,6 @@ ax.FontSize = 12;
 linkaxes(hStates,'x');
 sgtitle(sprintf('Convergence in State %s vs Time and Level Parameter', dataNameState))
 
-
-error('Update name of figure');
 end
 
 
@@ -83,7 +81,7 @@ function plotState(statsArray, times, dataName, stateIdx, simNames, ...
 
     xlabel('Time (s)');
     if fLogDiff
-        ylabel(sprintf('log_{10}(|%s - %s_{ref}|)', stateName, stateName));
+        ylabel(sprintf('log_{10}((|%s - %s_{ref})/%s_{ref}|)', stateName, stateName, stateName));
     else
         if strcmpi(dataName,'mean')
             ylabel(sprintf('%s - %s (%s)', stateName, dataName, stateUnits));

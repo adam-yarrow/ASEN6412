@@ -76,12 +76,12 @@ function [xStats, alphaStats, xStatsLogDiff, alphaStatsLogDiff] = ...
         alphaStats.var(:,iLevel)  = alphaStats_i.var;       
 
         % Generate Abs Log Differences Relative to Reference Traj
-        xStatsLogDiff.mean = log10(abs(xStats.mean - xStatsRef.mean));
-        xStatsLogDiff.cov = log10(abs(xStats.cov - xStatsRef.cov)); % TODO - might want to do this on std dev?
-        xStatsLogDiff.corr = log10(abs(xStats.corr - xStatsRef.corr));
+        xStatsLogDiff.mean = log10(abs(xStats.mean - xStatsRef.mean) ./ xStatsRef.mean);
+        xStatsLogDiff.cov = log10(abs(xStats.cov - xStatsRef.cov) ./ xStatsRef.cov); % TODO - might want to do this on std dev?
+        xStatsLogDiff.corr = log10(abs(xStats.corr - xStatsRef.corr) ./ xStatsRef.corr);
 
-        alphaStatsLogDiff.mean = log10(abs(alphaStats.mean - alphaStatsRef.mean));
-        alphaStatsLogDiff.var = log10(abs(alphaStats.var - alphaStatsRef.var));
+        alphaStatsLogDiff.mean = log10(abs(alphaStats.mean - alphaStatsRef.mean) ./ alphaStatsRef.mean);
+        alphaStatsLogDiff.var = log10(abs(alphaStats.var - alphaStatsRef.var) ./ alphaStatsRef.var);
 
     end
 end
