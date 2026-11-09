@@ -94,9 +94,23 @@ comparisonTol = 1E-14;
 
 
 % Plotting
+cvgLevelsSCnames = cellfun(@num2str, num2cell(cvgLevelsSC), 'UniformOutput', false);
+
+% Mean Response
+plotCvgSC_Trajectories(const, times, xStatsCvg_SC, alphaStatsCvg_SC, false, ...
+    cvgLevelsSCnames,'mean','mean');
+plotCvgSC_Trajectories(const, times, xStatsLogDiffCvg_SC, ...
+    alphaStatsLogDiffCvg_SC, true, cvgLevelsSCnames,'mean','mean');
+
+
+plotCvgSC_Trajectories(const, times, xStatsCvg_SC, alphaStatsCvg_SC, false, ...
+    cvgLevelsSCnames,'cov','var');
+plotCvgSC_Trajectories(const, times, xStatsLogDiffCvg_SC, ...
+    alphaStatsLogDiffCvg_SC, true, cvgLevelsSCnames,'cov','var');
+
 
 %% TODO - finish plotting differences (vs time is probably ideal?)
-stateIdx = 4;
+stateIdx = 5;
 
 figure();
 hold on;
@@ -106,6 +120,16 @@ end
 grid on;
 legend();
 ylabel(const.stateNames{stateIdx});
+
+
+figure();
+hold on;
+for i = 1:numel(cvgLevelsSC)
+    plot(times, squeeze(xStatsLogDiffCvg_SC.cov(stateIdx, stateIdx, :,i)),'DisplayName',sprintf('q = %i',cvgLevelsSC(i)));
+end
+grid on;
+legend();
+ylabel(sprintf('covariance diff - %s',const.stateNames{stateIdx}));
 
 
 figure();
