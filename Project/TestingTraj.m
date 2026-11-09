@@ -9,10 +9,10 @@ xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
 const.controller.sysIDActive = true;
 PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));
-simData = Simulation(xIC, PDControl, const);
+simData = Simulation(PDControl, const);
 
 const.aero.dynDeriv.model = 'static';
-simData_CmqOn = Simulation(xIC, PDControl, const);
+simData_CmqOn = Simulation(PDControl, const);
 
 plotSimulationResults({simData,simData_CmqOn}, {'Cmq - OFF','Cmq - STATIC'});
 

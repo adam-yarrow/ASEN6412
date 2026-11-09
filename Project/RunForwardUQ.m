@@ -26,9 +26,10 @@ const.aero.dynDeriv.model = 'static';
 dInputs = numel(stochasticParam);
 
 % MC Params
-Nmc = 25;
+Nmc = 100;
 
 % Stochastic Collocation Params
+levelSCC = 3; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -37,7 +38,7 @@ Nmc = 25;
     stochasticParam);
 
 % Plotting State Stats vs Time
-plotStateMoments(const, times, xStats_MC, alphaStats_MC);
+plotStateMoments(const, times, xStats_MC, alphaStats_MC, 'MC');
 
 % Plotting State Convergence At End time
 tToPlotConvergenceIdx = find(times == const.tEnd);
@@ -50,19 +51,26 @@ plotSimulationResults(rawData_MC.simData,[]);
 %% Stochastic Colloc
 % Want to use a sparse CC grid for implementation ease & ability to check
 % mesh convergence easier.
-levelSCC = 5; % Level for smolyak sparse grid
-
 % Generate Raw Weights and Yi values (Yi = [-1,1])
 [Y, W] = spquad(dInputs, levelSCC);
+
+% Run Fwd UQ
+[xStats_SC, alphaStats_SC, rawData_SC] = StochasticColloc(const, Y, W, ...
+                         controller, stochasticParam);
+
+% Plotting State Stats vs Time
+plotStateMoments(const, times, xStats_SC, alphaStats_SC, 'SC');
+
+%% Compare Stochastic Colloc and MC Estimates
 
 %% TODO - validate working correctly by comparing with MC results
 %% TODO - most worried about the multi-dimensional weightings
 
 % Testing
-[stochasticParam] = ForwardUqPerturbationVars();
-[Y, W] = spquad(dInputs, 3);
-[stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
-                    stochasticParam, Y, W);
+% [stochasticParam] = ForwardUqPerturbationVars();
+% [Y, W] = spquad(dInputs, 3);
+% [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
+%                     stochasticParam, Y, W);
 
 
 

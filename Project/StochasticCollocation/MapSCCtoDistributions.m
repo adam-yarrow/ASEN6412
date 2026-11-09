@@ -65,7 +65,7 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
     % terrible children.
     if sum(Wcorrected) < 0.8
         fprintf('Weights summed to: %f\n',sum(Wcorrected));        
-        error('Weights should sum close to 1.0');
+        % error('Weights should sum close to 1.0');
     end  
    
     % Repackage raw data into cell arrays

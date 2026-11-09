@@ -23,42 +23,74 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
     pathsToPerturb = cellfun(@(x) x.path, stochasticParam, 'UniformOutput', false);
 
     % Make Stochastic Colloc Inputs
-    stochasticValues = {};
-    rawStochasticValues = {};
-
-
-    [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
-                    stochasticParams, Y, W)
-    %TODO - make this
-
-
+    [stochasticValues, rawStochasticValues, Wcorrected] = MapSCCtoDistributions(...
+                    stochasticParam, Y, W);
+  
     % Run Stoch Colloc
     t0 = tic;
-    wb = progressBar(1, Nmc, t0, [], 'MC Runs');
+    wb = progressBar(1, nAbsisscas, t0, [], 'MC Runs');
     simDataStorage = cell(nAbsisscas, 1);
 
+    xStats = struct();
+    xStats.mean = zeros(const.nStates, nTimes);
+    xStats.cov = zeros(const.nStates, const.nStates, nTimes);
+    xStats.corr = zeros(const.nStates, const.nStates, nTimes);
+
+    ExSq = zeros(const.nStates, const.nStates, nTimes);
+
+    alphaStats.mean = zeros(nTimes,1);
+    alphaStats.var = zeros(nTimes,1);
+
+    EalphaSq = zeros(nTimes, 1);
+
+    % Process each absisscas
     for i = 1:nAbsisscas
         % Overwrite perturbations
-        constTemp = updateStruct(const, pathsToPerturb, stochasticValues{iMC});
+        constTemp = updateStruct(const, pathsToPerturb, stochasticValues{i});
             
         % Run Model
         simData = Simulation(controller, constTemp);
-        simDataStorage{iMC} = simData;
-        xStorage(:,:,iMC) = simData.x;
-        uStorage(:,iMC) = simData.u;
-        alphaStorage(:,iMC) = calcAlpha(simData.x);
+        simDataStorage{i} = simData;
+        xStorage(:,:,i) = simData.x;
+        uStorage(:,i) = simData.u;
+        alphaStorage(:,i) = calcAlpha(simData.x);
 
         % Calculate Statistics Using Stochastic Collocation
-        
-        %% TODO - work this out.
+        % E[x]
+        xStats.mean = xStats.mean + simData.x * Wcorrected(i); 
 
-    
+        % E[alpha]
+        alphaStats.mean = alphaStats.mean + alphaStorage(:,i)*Wcorrected(i);
+        
+        % E[x^2]
+        % FIXME: Maybe can do with pagemtimes?
+        for timeIdx = 1:nTimes
+            ExSq(:,:,timeIdx) = ExSq(:,:,timeIdx) + ...
+                Wcorrected(i)*simData.x(:,timeIdx)*simData.x(:,timeIdx)';
+        end
+
+        % E[alpha^2]
+        EalphaSq = EalphaSq + Wcorrected(i)*alphaStorage(:,i).^2;
+          
         % Progress bar
-        progressBar(iMC, Nmc, t0, wb);
-    
+        progressBar(i, nAbsisscas, t0, wb);    
     end
 
+    % Process cov and correlation - FIXME: Find a way to get around this
+    % for loop
+    for timeIdx = 1:nTimes
+        % Cov
+        xStats.cov(:,:,timeIdx) = ExSq(:,:,timeIdx) - ...
+                        xStats.mean(:,timeIdx)*xStats.mean(:,timeIdx)';
 
+        % Correlation
+        sigma =  diag(xStats.cov(:,:,timeIdx)).^0.5;
+        sigmaInvTensor = 1./sigma * 1./sigma';
+        xStats.corr(:,:,timeIdx) = xStats.cov(:,:,timeIdx) .* sigmaInvTensor;
+
+    end
+
+    alphaStats.var = EalphaSq - alphaStats.mean.^2;
 
     % Package raw data
     rawData.x = xStorage;
@@ -66,6 +98,4 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
     rawData.alpha = alphaStorage;
     rawData.rawStochasticValues = rawStochasticValues;
     rawData.simData = simDataStorage;
-
-
 end
