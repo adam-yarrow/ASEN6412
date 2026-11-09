@@ -36,4 +36,7 @@ function [stochasticParam] = ForwardUqPerturbationVars()
 
     stochasticParam = {CMq, V, theta, h};
     
+    % TODO - delete this once finished debugging
+    stochasticParam = {CMq};
+    warning('TODO - delete this temporary test fix');
 end

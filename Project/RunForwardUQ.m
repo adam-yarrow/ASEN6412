@@ -5,7 +5,9 @@
     Uses stochastic collocation to get mean and covariance of trajectories
     with respect to time.
     
-    Compares the result with classical MC methods
+    Compares the result with classical MC methods.
+
+    Checks the convergence of the SC results.
 %}
 %% Configuration
 % Fix rng
@@ -29,7 +31,7 @@ dInputs = numel(stochasticParam);
 Nmc = 500;
 
 % Stochastic Collocation Params
-levelSCC = 6; % Level for smolyak sparse grid
+levelSCC = 8; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -74,7 +76,46 @@ alphaSigmaAbsDiff = (alphaStats_SC.var .^0.5 - alphaStats_MC.var(:,end) .^0.5);
 plotMCvsSC_StateMoments(const, times, meanAbsDiff, sigmaAbsDiff, ...
                                alphaMeanAbsDiff, alphaSigmaAbsDiff);  
 
-%% TODO - do convergence of Stochastic Collocation vs time
+%%  Stochastic Collocation Convergence
+%{
+    Treat the original stochastic collocation run as the reference and then
+    see how the mean and covariance of the trajectory converges for reduced
+    smolyak levels.
+%}
+cvgLevelsSC = 1:levelSCC-1;
+comparisonTol = 1E-14;
 
+[xStatsCvg_SC, alphaStatsCvg_SC, xStatsLogDiffCvg_SC, alphaStatsLogDiffCvg_SC] = ...
+    CheckStochasticCollocConvergence(...
+                                cvgLevelsSC, Y, rawData_SC.simData, ...
+                                xStats_SC, alphaStats_SC,...
+                                const, controller, stochasticParam, ...
+                                comparisonTol);
+
+
+% Plotting
+
+%% TODO - finish plotting differences (vs time is probably ideal?)
+stateIdx = 4;
+
+figure();
+hold on;
+for i = 1:numel(cvgLevelsSC)
+    plot(times, squeeze(xStatsLogDiffCvg_SC.mean(stateIdx, :,i)),'DisplayName',sprintf('q = %i',cvgLevelsSC(i)));
+end
+grid on;
+legend();
+ylabel(const.stateNames{stateIdx});
+
+
+figure();
+hold on;
+plot(cvgLevelsSC, squeeze(xStatsLogDiffCvg_SC.mean(stateIdx, end,:)));
+grid on;
+legend();
+ylabel(const.stateNames{stateIdx});
+
+%% TODO - plot each mean trajectory vs time overlaid
+%% TODO - plot the relative reduction in the final mean state/ covariance of the states vs time
 
 

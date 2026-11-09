@@ -1,16 +1,36 @@
 function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
-                        controller, stochasticParam)
+                        controller, stochasticParam, overrideSimData)
     %{
         This function runs stochastic collocation to estimate the
         trajectory statistics and forward UQ.
 
-        const = baseline parameter set
-        Y = d x N number of points to evaluate at
-        W = N x 1 weights for each point
-        controller = annonymous function representing the controller
-        stochasticParam = cell array of structs defining how to perturb the
-        parameters in the model.
+        There's very little idiot proofing on these inputs, we raw dogging
+        a bunch of shit, hence sometimes get some "fun" behaviours.
+
+        Inputs:
+            const = baseline parameter set
+            Y = d x N number of points to evaluate at
+            W = N x 1 weights for each point
+            controller = annonymous function representing the controller
+            stochasticParam = cell array of structs defining how to perturb the
+            parameters in the model.
+            overrideSimData = cell array of precomputed sim data (e.g. from
+            other levels, will negate the need to run the simulation)
+
+        Ouputs:
+            xStats = statistics struct
+            alphaStats = like xStats but alpha
+            rawData = raw sim data/function evals - handy for nested 
+            behavior ("very nice!" - Borat)   
     %}
+    % No override sim data case
+    if nargin < 6
+        fNoExternalSimData = true;
+    else
+        fNoExternalSimData = false;
+    end
+
+    % General
     nAbsisscas = numel(W);
 
     % Storage
@@ -49,7 +69,12 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
         constTemp = updateStruct(const, pathsToPerturb, stochasticValues{i});
             
         % Run Model
-        simData = Simulation(controller, constTemp);
+        if fNoExternalSimData
+            simData = Simulation(controller, constTemp);
+        else
+            simData = overrideSimData{i};
+        end
+
         simDataStorage{i} = simData;
         xStorage(:,:,i) = simData.x;
         uStorage(:,i) = simData.u;
