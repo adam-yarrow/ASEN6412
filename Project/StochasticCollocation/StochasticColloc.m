@@ -73,7 +73,7 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
         EalphaSq = EalphaSq + Wcorrected(i)*alphaStorage(:,i).^2;
           
         % Progress bar
-        progressBar(i, nAbsisscas, t0, wb);    
+        wb = progressBar(i, nAbsisscas, t0, wb);    
     end
 
     % Process cov and correlation - FIXME: Find a way to get around this

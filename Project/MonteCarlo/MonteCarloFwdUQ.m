@@ -38,7 +38,7 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         alphaStorage(:,iMC) = calcAlpha(simData.x);
     
         % Progress bar
-        progressBar(iMC, Nmc, t0, wb);
+        wb = progressBar(iMC, Nmc, t0, wb);
     end
     
     % Calculate Statistics

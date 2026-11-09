@@ -26,10 +26,10 @@ const.aero.dynDeriv.model = 'static';
 dInputs = numel(stochasticParam);
 
 % MC Params
-Nmc = 100;
+Nmc = 500;
 
 % Stochastic Collocation Params
-levelSCC = 3; % Level for smolyak sparse grid
+levelSCC = 6; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -61,16 +61,20 @@ plotSimulationResults(rawData_MC.simData,[]);
 % Plotting State Stats vs Time
 plotStateMoments(const, times, xStats_SC, alphaStats_SC, 'SC');
 
+% Visualise trajectories
+plotSimulationResults(rawData_SC.simData,[]);
+
 %% Compare Stochastic Colloc and MC Estimates
+meanAbsDiff = (xStats_SC.mean - xStats_MC.mean(:,:,end));
+sigmaAbsDiff = (xStats_SC.cov .^0.5 - xStats_MC.cov(:,:,:,end) .^0.5);
 
-%% TODO - validate working correctly by comparing with MC results
-%% TODO - most worried about the multi-dimensional weightings
+alphaMeanAbsDiff = (alphaStats_SC.mean - alphaStats_MC.mean(:,end));
+alphaSigmaAbsDiff = (alphaStats_SC.var .^0.5 - alphaStats_MC.var(:,end) .^0.5);
 
-% Testing
-% [stochasticParam] = ForwardUqPerturbationVars();
-% [Y, W] = spquad(dInputs, 3);
-% [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
-%                     stochasticParam, Y, W);
+plotMCvsSC_StateMoments(const, times, meanAbsDiff, sigmaAbsDiff, ...
+                               alphaMeanAbsDiff, alphaSigmaAbsDiff);  
+
+%% TODO - do convergence of Stochastic Collocation vs time
 
 
 
