@@ -24,7 +24,7 @@ times = 0:const.dT:const.tEnd;
 const.aero.dynDeriv.model = 'off'; 
 
 % Random Inputs
-[stochasticParam] = ForwardUqPerturbationVars('static-Cmalpha-Cm0-CmalphaSq');
+[stochasticParam] = ForwardUqPerturbationVars('static-Cmalpha-only');
 dInputs = numel(stochasticParam);
 
 % MC Params
@@ -113,39 +113,5 @@ plotCvgSC_Trajectories(const, times, xStatsCvg_SC, alphaStatsCvg_SC, false, ...
     cvgLevelsSCnames,'cov','var');
 plotCvgSC_Trajectories(const, times, xStatsLogDiffCvg_SC, ...
     alphaStatsLogDiffCvg_SC, true, cvgLevelsSCnames,'cov','var');
-
-
-%% TODO - finish plotting differences (vs time is probably ideal?)
-stateIdx = 5;
-
-figure();
-hold on;
-for i = 1:numel(cvgLevelsSC)
-    plot(times, squeeze(xStatsLogDiffCvg_SC.mean(stateIdx, :,i)),'DisplayName',sprintf('q = %i',cvgLevelsSC(i)));
-end
-grid on;
-legend();
-ylabel(const.stateNames{stateIdx});
-
-
-figure();
-hold on;
-for i = 1:numel(cvgLevelsSC)
-    plot(times, squeeze(xStatsLogDiffCvg_SC.cov(stateIdx, stateIdx, :,i)),'DisplayName',sprintf('q = %i',cvgLevelsSC(i)));
-end
-grid on;
-legend();
-ylabel(sprintf('covariance diff - %s',const.stateNames{stateIdx}));
-
-
-figure();
-hold on;
-plot(cvgLevelsSC, squeeze(xStatsLogDiffCvg_SC.mean(stateIdx, end,:)));
-grid on;
-legend();
-ylabel(const.stateNames{stateIdx});
-
-%% TODO - plot each mean trajectory vs time overlaid
-%% TODO - plot the relative reduction in the final mean state/ covariance of the states vs time
 
 
