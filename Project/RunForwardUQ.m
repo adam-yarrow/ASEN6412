@@ -24,7 +24,7 @@ times = 0:const.dT:const.tEnd;
 const.aero.dynDeriv.model = 'off'; 
 
 % Random Inputs
-[stochasticParam] = ForwardUqPerturbationVars();
+[stochasticParam] = ForwardUqPerturbationVars('static-Cmalpha-Cm0-CmalphaSq');
 dInputs = numel(stochasticParam);
 
 % MC Params
