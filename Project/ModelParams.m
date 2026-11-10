@@ -86,11 +86,13 @@ function [const] = ModelParams(varargin)
     %% Controller
     const.controller.sysID.fActive = true;
     const.controller.sysID.mode = 'sine'; % {'step','sine'}
+
     const.controller.sysID.stepDuration = 0.1; % s
+
     const.controller.sysID.sineDuration = 3; % s
     const.controller.sysID.sineFreq = 1; % Hz
 
-    %% Initial Conditions
+    %% Initial Conditions (Default values)
     const.xIC.V =  1500;
     const.xIC.gamma = 0; 
     const.xIC.q = 0;

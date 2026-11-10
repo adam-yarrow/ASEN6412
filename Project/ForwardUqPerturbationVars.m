@@ -6,10 +6,24 @@ function [stochasticParam] = ForwardUqPerturbationVars()
     warning('How do i handle the fact distributions might be coupled?')
 
     % Specify Random Variable Distributions
-    CMq.path = 'aero.dynDeriv.CM_q_static';
-    CMq.distribution = 'uniform';
-    CMq.min = -0.2*100;
-    CMq.max = -0.2*500;
+    CMalpha.path = 'aero.CM_alpha';
+    CMalpha.distribution = 'trunc-gaussian';
+    CMalpha.mean = 2.1335;
+    CMalpha.sigma = 2.1335/10; % Assuming 10% variation per sigma
+    CMalpha.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
+
+    %% TODO - decide if changing these values too
+    CMalphaSq.path = 'aero.CM_alphaSq';
+    CMalphaSq.distribution = 'uniform';
+    CMalphaSq.mean = 6.2926;
+    CMalphaSq.sigma = 6.2926/10; % Assuming 10% variation per sigma
+    CMalphaSq.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
+
+    Cm0.path = 'aero.CM_0';
+    Cm0.distribution = 'uniform';
+    Cm0.mean = 1.8979E-1;
+    Cm0.sigma = 1.8979E-2; % Assuming 10% variation per sigma
+    Cm0.truncatedSigmaLevel = 3;
     
     % V.distribution = 'uniform';
     % V.min = 1400;
@@ -34,9 +48,9 @@ function [stochasticParam] = ForwardUqPerturbationVars()
     h.sigma = 500/3; % 3-sigma = 500 m/s
     h.truncatedSigmaLevel = 3;
 
-    stochasticParam = {CMq, V, theta, h};
+    % stochasticParam = {CMalpha, V, theta, h};
     
     % TODO - delete this once finished debugging
-    stochasticParam = {CMq};
+    stochasticParam = {CMalpha};
     warning('TODO - delete this temporary test fix');
 end

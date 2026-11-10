@@ -5,7 +5,6 @@ Startup();
 
 const = ModelParams();
 
-xIC = [1500; 0; 0; 0; 28000]; % Guess
 %% Basic Test
 const.controller.sysIDActive = true;
 PDControl = @(t,x,const) AlphaController(t,x,const, @(t) getReferenceAlpha(t));

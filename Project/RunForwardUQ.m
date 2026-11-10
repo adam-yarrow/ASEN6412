@@ -20,18 +20,18 @@ controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t
 
 times = 0:const.dT:const.tEnd;
 
-% Cmq Active and static model
-const.aero.dynDeriv.model = 'static'; 
+% Forcing Cmq off (like original paper)
+const.aero.dynDeriv.model = 'off'; 
 
 % Random Inputs
 [stochasticParam] = ForwardUqPerturbationVars();
 dInputs = numel(stochasticParam);
 
 % MC Params
-Nmc = 500;
+Nmc = 1000;
 
 % Stochastic Collocation Params
-levelSCC = 8; % Level for smolyak sparse grid
+levelSCC = 9; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -49,6 +49,12 @@ plotConvergenceOfStateMoments(const, tToPlotConvergenceIdx, xStats_MC,...
 
 % runNames = cellfun(@num2str, num2cell(1:Nmc), 'UniformOutput', false);
 plotSimulationResults(rawData_MC.simData,[]);
+
+%% Checking for Bi-Modality in Data 
+% If bi-modal stochastic collocation may break down/representing the states
+% with just 2 moments will be inappropriate (e.g. may need 3rd and 4th
+% moment or PDF too).
+plotMC_HistogramsInteractive(const, rawData_MC);
 
 %% Stochastic Colloc
 % Want to use a sparse CC grid for implementation ease & ability to check
