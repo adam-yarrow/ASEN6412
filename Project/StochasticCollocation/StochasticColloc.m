@@ -1,5 +1,6 @@
-function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
-                        controller, stochasticParam, overrideSimData)
+function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
+                        controller, stochasticParam, stochasticParamGP, ...
+                        overrideSimData)
     %{
         This function runs stochastic collocation to estimate the
         trajectory statistics and forward UQ.
@@ -9,11 +10,13 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
 
         Inputs:
             const = baseline parameter set
-            Y = d x N number of points to evaluate at
+            Z = d x N number of points to evaluate at
             W = N x 1 weights for each point
             controller = annonymous function representing the controller
             stochasticParam = cell array of structs defining how to perturb the
             parameters in the model.
+            stochasticParamGP = struct containing gaussian process data for
+            Cm_alpha
             overrideSimData = cell array of precomputed sim data (e.g. from
             other levels, will negate the need to run the simulation)
 
@@ -24,7 +27,7 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
             behavior ("very nice!" - Borat)   
     %}
     % No override sim data case
-    if nargin < 6
+    if nargin < 7
         fNoExternalSimData = true;
     else
         fNoExternalSimData = false;
@@ -42,10 +45,51 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
     % Paths to perturb
     pathsToPerturb = cellfun(@(x) x.path, stochasticParam, 'UniformOutput', false);
 
+    % Handle Gaussian Processes First
+    ZnonGP = Z;
+    dGP = 0;
+    Ygp = NaN(nAbsisscas, dGP);
+    fGP = false;
+
+    if ~isempty(stochasticParamGP)
+        % Set general parameters that will be active for all cases
+        const.aero.GP.fActive = true;
+        const.aero.GP.dataKLE = stochasticParamGP.dataKLE;
+        dGP = stochasticParamGP.dataKLE.d;
+        fGP = true;
+
+        % Map Zi = [-1,1] to Ygp_i ~ N(0,1), truncated to +/-K*sigma,
+        % sigma = 1
+        Ygp = stochasticParamGP.YtruncSigma * Z(:,1:dGP); 
+
+        % Adjust weights based on truncated KLE - same process as truncated
+        % gaussian
+        Wgp = NaN(nAbsisscas, dGP);        
+        for iDim = 1:dGP
+            Wgp(:,iDim) = stochasticParamGP.YtruncSigma * ...
+                            truncNormalPdf(Ygp(:,iDim), 0, 1, ...
+                            stochasticParamGP.YtruncSigma);
+            
+        end
+
+        % Overite old W with new GP corrected W scaled by all dimensions
+        W = W .* prod(Wgp, 2);
+
+        % Check W is well conditioned (should be close to 1, checking +/- 20%)
+        if abs(sum(W) - 1) > 0.2
+            fprintf('WARNING: GP weights summed to: %f\n',sum(W));   
+        end 
+
+        % Remove Z values that were consumed by the dimensions of the
+        % gaussian process
+        ZnonGP = Z(:,dGP+1:end);
+    end
+
     % Make Stochastic Colloc Inputs
     [stochasticValues, rawStochasticValues, Wcorrected] = MapSCCtoDistributions(...
-                    stochasticParam, Y, W);
-  
+                    stochasticParam, ZnonGP, W);
+
+   
     % Run Stoch Colloc
     t0 = tic;
     wb = progressBar(1, nAbsisscas, t0, [], 'MC Runs');
@@ -68,6 +112,11 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
         % Overwrite perturbations
         constTemp = updateStruct(const, pathsToPerturb, stochasticValues{i});
             
+        % Process GP variables
+        if fGP
+            constTemp.aero.GP.Y = Ygp(i,:)';            
+        end
+
         % Run Model
         if fNoExternalSimData
             simData = Simulation(controller, constTemp);
@@ -122,5 +171,7 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Y, W, ...
     rawData.u = uStorage;
     rawData.alpha = alphaStorage;
     rawData.rawStochasticValues = rawStochasticValues;
+    rawData.Ygp = Ygp;
+    rawData.Wcorrected = Wcorrected;
     rawData.simData = simDataStorage;
 end

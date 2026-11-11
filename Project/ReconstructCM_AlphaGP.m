@@ -11,7 +11,7 @@ function ReconstructCM_AlphaGP(Y, times, dataKLE, idxToPlot)
     end
     
     phi = MakePhiMatrix(times, dataKLE);    
-
+    
     CM_alpha = getRV_KLE_Fast(times, dataKLE, phi, Y);
 
     figure('Name','CM_Alpha Gaussian Process');

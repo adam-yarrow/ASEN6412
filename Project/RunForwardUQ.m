@@ -41,7 +41,7 @@ end
 Nmc = 100;
 
 % Stochastic Collocation Params
-levelSCC = 5; % Level for smolyak sparse grid
+levelSCC = 7; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -75,7 +75,7 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 
 % Run Fwd UQ
 [xStats_SC, alphaStats_SC, rawData_SC] = StochasticColloc(const, Y, W, ...
-                         controller, stochasticParam);
+                         controller, stochasticParam, stochasticParamGP);
 
 % Plotting State Stats vs Time
 plotStateMoments(const, times, xStats_SC, alphaStats_SC, 'SC');
@@ -107,7 +107,7 @@ comparisonTol = 1E-14;
                                 cvgLevelsSC, Y, rawData_SC.simData, ...
                                 xStats_SC, alphaStats_SC,...
                                 const, controller, stochasticParam, ...
-                                comparisonTol);
+                                stochasticParamGP, comparisonTol);
 
 
 % Plotting

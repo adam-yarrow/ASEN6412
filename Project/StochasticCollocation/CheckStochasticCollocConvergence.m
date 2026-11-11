@@ -1,7 +1,8 @@
 function [xStats, alphaStats, xStatsLogDiff, alphaStatsLogDiff] = ...
     CheckStochasticCollocConvergence(cvgLevels, ...
                 Yref, refSimulationData, xStatsRef, alphaStatsRef,...
-                const, controller, stochasticParam, comparisonTol)
+                const, controller, stochasticParam, stochasticParamGP,...
+                comparisonTol)
     %{
         Checks the convergence of stochastic collocation as a function of
         level parameter. Assumes you have ran a reference simulation (Yref,
@@ -18,6 +19,7 @@ function [xStats, alphaStats, xStatsLogDiff, alphaStatsLogDiff] = ...
             const = same constant parameters as reference.
             controller = same controller func as reference.
             stochasticParam = same stochastic param as reference.
+            stochasticParamGP = for Gaussian Process of CMalpha
 
         Outputs:    
             xStats = structure containing mean and covariance stats for
@@ -65,7 +67,8 @@ function [xStats, alphaStats, xStatsLogDiff, alphaStatsLogDiff] = ...
 
         % Run SC
         [xStats_i, alphaStats_i, ~] = StochasticColloc(const, Y, W, ...
-                         controller, stochasticParam, simData);
+                         controller, stochasticParam, stochasticParamGP, ...
+                         simData);
 
         % Save Data
         xStats.mean(:,:,iLevel)  = xStats_i.mean;
