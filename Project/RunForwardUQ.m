@@ -24,7 +24,7 @@ times = 0:const.dT:const.tEnd;
 const.aero.dynDeriv.model = 'off'; 
 
 % Random Inputs
-inputVarianceMode = 'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
+inputVarianceMode = 'static-Cmalpha-wIC'; %'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
 [stochasticParam, stochasticParamGP, fGP] = ...
     ForwardUqPerturbationVars(inputVarianceMode, const);
 
@@ -38,10 +38,14 @@ if fGP
 end
 
 % MC Params
-Nmc = 100;
+Nmc = 6017; % equiv number of points to spquad(3,8)
+nSamplesPerBin = 100; % For plotting interactive histograms
 
 % Stochastic Collocation Params
-levelSCC = 7; % Level for smolyak sparse grid
+levelSCC = 8; % Level for smolyak sparse grid
+
+% Plotting
+fPlotSimData = false;
 
 
 %% Baseline MC Method
@@ -57,14 +61,14 @@ tToPlotConvergenceIdx = find(times == const.tEnd);
 plotConvergenceOfStateMoments(const, tToPlotConvergenceIdx, xStats_MC,...
                                 alphaStats_MC, Nmc);
 
-% runNames = cellfun(@num2str, num2cell(1:Nmc), 'UniformOutput', false);
-plotSimulationResults(rawData_MC.simData,[]);
+if fPlotSimData
+    plotSimulationResults(rawData_MC.simData,[]);
+end
 
 %% Checking for Bi-Modality in Data 
 % If bi-modal stochastic collocation may break down/representing the states
 % with just 2 moments will be inappropriate (e.g. may need 3rd and 4th
 % moment or PDF too).
-nSamplesPerBin = 10;
 plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 
 %% Stochastic Colloc
@@ -81,7 +85,9 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 plotStateMoments(const, times, xStats_SC, alphaStats_SC, 'SC');
 
 % Visualise trajectories
-plotSimulationResults(rawData_SC.simData,[]);
+if fPlotSimData
+    plotSimulationResults(rawData_SC.simData,[]);
+end
 
 %% Compare Stochastic Colloc and MC Estimates
 meanAbsDiff = (xStats_SC.mean - xStats_MC.mean(:,:,end));
