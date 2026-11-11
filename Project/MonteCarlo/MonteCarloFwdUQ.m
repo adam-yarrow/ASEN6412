@@ -1,5 +1,5 @@
 function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,...
-    stochasticParam)
+    stochasticParam, stochasticParamGP)
     %{
         This function runs a MC simulation to estimate the trajectory
         statistics and forward UQ.
@@ -9,6 +9,8 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         controller = annonymous function representing the controller
         stochasticParam = cell array of structs defining how to perturb the
         parameters in the model.
+        stochasticParamGP = data for stochastic gaussian process of
+        Cm_alpha
     %}
     
     % Storage
@@ -22,14 +24,33 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
     
     % Generate Random Inputs for each MC case
     [stochasticValues, rawStochasticValues] = DrawRandomVariables(stochasticParam, Nmc);
+
+    % Setup Gaussian Process Cm_alpha
+    fGP = false;
+    dGP = 0;
+    if ~isempty(stochasticParamGP)
+        const.aero.GP.fActive = true;
+        const.aero.GP.dataKLE = stochasticParamGP.dataKLE;
+        dGP = stochasticParamGP.dataKLE.d;
+        fGP = true;
+    end
     
     t0 = tic;
     wb = progressBar(1, Nmc, t0, [], 'MC Runs');
     simDataStorage = cell(Nmc, 1);
+    Ygp = NaN(dGP, Nmc);
+
     for iMC = 1:Nmc
-        % Overwrite perturbations
+        % Overwrite perturbations - static variables
         constTemp = updateStruct(const, pathsToPerturb, stochasticValues{iMC});
-    
+
+        % Setup Gaussian process random variables
+        if fGP
+            Ktrunc = stochasticParamGP.YtruncSigma;
+            Ygp(:,iMC) = trandn(-Ktrunc*ones(dGP,1), Ktrunc*ones(dGP,1));
+            constTemp.aero.GP.Y = Ygp(:,iMC) ;
+        end
+
         % Run Model
         simData = Simulation(controller, constTemp);
         simDataStorage{iMC} = simData;
@@ -51,5 +72,6 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
     rawData.u = uStorage;
     rawData.alpha = alphaStorage;
     rawData.rawStochasticValues = rawStochasticValues;
+    rawData.rawY_GP = Ygp;
     rawData.simData = simDataStorage;
 end

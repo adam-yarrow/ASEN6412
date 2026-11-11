@@ -51,7 +51,6 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
                     truncNormalPdf(rawParams{iParam}, param.mean, ...
                         param.sigma, param.truncatedSigmaLevel);
 
-                warning('Need to consider if should use truncated density or true density here?');
          
         end
     end
@@ -63,9 +62,8 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
     % Checking weights are reasonable values given distributions at hand
     % #Use protection it'll save your Stochastic Collocation from spawning
     % terrible children.
-    if sum(Wcorrected) < 0.8
-        fprintf('Weights summed to: %f\n',sum(Wcorrected));        
-        % error('Weights should sum close to 1.0');
+    if abs(sum(Wcorrected) - 1) > 0.2
+        fprintf(' WARNING: Weights summed to: %f\n',sum(Wcorrected));  
     end  
    
     % Repackage raw data into cell arrays
