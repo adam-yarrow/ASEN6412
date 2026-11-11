@@ -24,11 +24,21 @@ times = 0:const.dT:const.tEnd;
 const.aero.dynDeriv.model = 'off'; 
 
 % Random Inputs
-[stochasticParam] = ForwardUqPerturbationVars('static-Cmalpha-only');
+inputVarianceMode = 'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
+[stochasticParam, stochasticParamGP, fGP] = ...
+    ForwardUqPerturbationVars(inputVarianceMode);
+
 dInputs = numel(stochasticParam);
 
+if fGP
+    % KLE Approximation
+    [d, dataKLE] = GetTruncatedKLE(stochasticParamGP);
+    dInputs = dInputs + d;
+    stochasticParamGP.dataKLE = dataKLE;
+end
+
 % MC Params
-Nmc = 1000;
+Nmc = 100;
 
 % Stochastic Collocation Params
 levelSCC = 9; % Level for smolyak sparse grid
@@ -37,7 +47,7 @@ levelSCC = 9; % Level for smolyak sparse grid
 %% Baseline MC Method
 % Run MC
 [xStats_MC, alphaStats_MC, rawData_MC] = MonteCarloFwdUQ(const,Nmc,controller,...
-    stochasticParam);
+    stochasticParam, stochasticParamGP);
 
 % Plotting State Stats vs Time
 plotStateMoments(const, times, xStats_MC, alphaStats_MC, 'MC');

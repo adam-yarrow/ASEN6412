@@ -64,5 +64,5 @@ function xDot = plantDynCL(t, x, fController, const)
         Aka "we have ZOH at home"
     %}    
     [u,~] = fController(t, x, const);
-    xDot = getDynamics(x, u, const);
+    xDot = getDynamics(x, u, const, t);
 end

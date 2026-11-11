@@ -1,7 +1,9 @@
-function [stochasticParam] = ForwardUqPerturbationVars(mode)
+function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(mode)
     %{
         This function acts as a master source of truth for all forward UQ
         perturbations and their associated distributions.
+
+        NOTE: if in gaussian process mode then this will return empty
 
 
         Example Types:
@@ -20,17 +22,16 @@ function [stochasticParam] = ForwardUqPerturbationVars(mode)
     %}
 
     %% Aero Random Var Options
-    % Specify Random Variable Distributions
     CMalpha.path = 'aero.CM_alpha';
     CMalpha.distribution = 'trunc-gaussian';
-    CMalpha.mean = 2.1335;
+    CMalpha.mean = -2.1335;
     CMalpha.sigma = 2.1335/10; % Assuming 10% variation per sigma
     CMalpha.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
 
     %% TODO - decide if changing these values too
     CMalphaSq.path = 'aero.CM_alphaSq';
     CMalphaSq.distribution = 'trunc-gaussian';
-    CMalphaSq.mean = 6.2926;
+    CMalphaSq.mean = -6.2926;
     CMalphaSq.sigma = 6.2926/10; % Assuming 10% variation per sigma
     CMalphaSq.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
 
@@ -59,6 +60,9 @@ function [stochasticParam] = ForwardUqPerturbationVars(mode)
     h.truncatedSigmaLevel = 3;
 
     %% Process Different Options Based On Mode
+    fGP = false;
+    stochasticParamGP = [];
+    
     switch lower(mode)
         case lower('static-Cmalpha-only')
             stochasticParam = {CMalpha};
@@ -70,6 +74,28 @@ function [stochasticParam] = ForwardUqPerturbationVars(mode)
             stochasticParam = {CMalpha, V, theta, h};
 
         case lower('Cmalpha-GP-staticMean')
+            stochasticParamGP.meanFunction = @(t) -2.1335*ones(size(t)); % same as normal value
+            targetSigma = 2.1335/10;
+            stochasticParamGP.sigma = targetSigma / 5; % tuned to give nice response
+            stochasticParamGP.l = 40; % Tuned
+            stochasticParamGP.YtruncSigma = 3;
+            stochasticParamGP.inputVariableMin = 0;
+            stochasticParamGP.inputVariableMax = 20; % notinally time, but might change
+            stochasticParamGP.truncErrorMSE = 0.01; % 1% trunc error for KLE
+           
+            lambdaOptions = struct();
+            lambdaOptions.mode = 'approximate';
+            lambdaOptions.k = 200; % Assuming 100 eigenvalues beyond current eval adequate
+            lambdaOptions.maxIts = 100;
+            lambdaOptions.fPlot = false;
+
+            stochasticParamGP.lambdaOptions = lambdaOptions;
+
+            fGP = true;
+
+            % Any static parameters can go here
+            stochasticParam = {theta};
+
             % TODO
         case lower('Cmalpha-GP-linearMean')
             % TODO

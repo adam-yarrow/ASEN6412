@@ -63,22 +63,19 @@ function [const] = ModelParams(varargin)
     const.aero.CD_deltaE = 2.7699E-4; % rad^-1
     const.aero.CD_0 = 1.0131E-2; 
 
-    const.aero.CM_alphaSq = 6.2926; % rad^-2
-    const.aero.CM_alpha = 2.1335; % rad^-1
+    const.aero.CM_alphaSq = -6.2926; % rad^-2
+    const.aero.CM_alpha = -2.1335; % rad^-1
     const.aero.CM_0 = 1.8979E-1;
     const.aero.CM_deltaE = -1.2897; % rad^-1
-
-    const.aero.fMakeStaticallyStable = true; %% MUST BE TRUE OR ELSE YOU CRASH
 
     %% Dynamic Derivatives
     const.aero.dynDeriv.model = 'off'; %{'off','static','dynamic'}
     % Stabilizing: Took 1/10 of Cmalpha and scaled by 2*Vnom/cbar (~500)
     % Normal value might be closer to -5?
-    
     const.aero.dynDeriv.CM_q_static = -0.2*400; 
 
     %% Sensor Model
-
+    % TODO for inverse problem
 
     %% Constraints
     const.constraint.deltaEBounds = [-deg2rad(30), deg2rad(30)];
@@ -98,6 +95,11 @@ function [const] = ModelParams(varargin)
     const.xIC.q = 0;
     const.xIC.theta = 0;
     const.xIC.h = 28000;
+
+    %% Gaussian Process for CM_Alpha
+    const.aero.GP.fActive = false;
+    const.aero.GP.dataKLE = [];
+    const.aero.GP.Y = [];
 
 
 

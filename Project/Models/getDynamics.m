@@ -1,4 +1,4 @@
-function [xDot] = getDynamics(x, u, const)
+function [xDot] = getDynamics(x, u, const, t)
 %{
     Gets xDot = f(x,u)
     x = [V, gamma, q, theta, h]
@@ -26,7 +26,7 @@ function [xDot] = getDynamics(x, u, const)
     qBar = 0.5.* rho .* V.^2; % Pa
 
     % Get External Forces
-    [CL, CD, CM, CMq] = getAeroCoeffs(alpha, deltaE, const);
+    [CL, CD, CM, CMq] = getAeroCoeffs(alpha, deltaE, const, t, x);
 
     D = qBar.*S.*CD;
     L = qBar.*S.*CL;

@@ -51,7 +51,6 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
                     truncNormalPdf(rawParams{iParam}, param.mean, ...
                         param.sigma, param.truncatedSigmaLevel);
 
-                warning('Need to consider if should use truncated density or true density here?');
          
         end
     end
