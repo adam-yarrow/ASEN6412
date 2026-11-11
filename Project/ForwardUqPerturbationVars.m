@@ -43,20 +43,20 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
     
     %% IC Random Var Options
     V.path = 'xIC.V';
-    V.distribution = 'trunc-gaussian'; %% TODO - change these to be trunc gaussian in future
+    V.distribution = 'trunc-gaussian'; 
     V.mean = 1500;
-    V.sigma = 33; % 3-sigma = 100 m/s
+    V.sigma = 20; % 3-sigma = 60 m/s (e.g. +/- ~0.2 of a Mach number if a = 300 m/s)
     V.truncatedSigmaLevel = 3;
     
     theta.path = 'xIC.theta';
     theta.distribution = 'uniform'; % Proxy for alpha (if gamma = 0)
-    theta.min = deg2rad(-5);
-    theta.max = deg2rad(5);
+    theta.min = deg2rad(-1);
+    theta.max = deg2rad(1); % +/- 1 deg alpha pretty important
     
     h.path = 'xIC.h';
     h.distribution = 'trunc-gaussian';
     h.mean = 28000;
-    h.sigma = 500/3; % 3-sigma = 500 m/s
+    h.sigma = 100/3; % 3-sigma = 100 m
     h.truncatedSigmaLevel = 3;
 
     %% Process Different Options Based On Mode
@@ -71,7 +71,8 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
             stochasticParam = {CMalpha, CMalphaSq, Cm0};
 
         case lower('static-Cmalpha-wIC')
-            stochasticParam = {CMalpha, V, theta, h};
+            % stochasticParam = {CMalpha, V, theta, h};
+            stochasticParam = {CMalpha, V, h};
 
         case lower('Cmalpha-GP-staticMean')
             %{
