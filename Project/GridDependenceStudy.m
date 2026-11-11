@@ -17,6 +17,10 @@ xStorage = NaN(const.nStates, nTimes, nDT-1);
 alphaStorage = NaN(nTimes, nDT-1);
 simDataStorage = cell(nDT,1);
 
+
+%% 
+error('this gives identical results because RK45 fixes error levels')
+
 refX = [];
 refAlpha = [];
 
@@ -28,14 +32,14 @@ for iDT = 1:nDT
 
     simDataStorage{iDT} = simData;
 
-    [~, validIdx] = intersect(simData.times, storageTimes);
-
+    xInterp = interp1(simData.times, simData.x', storageTimes)';
+    alphaInterp = interp1(simData.times, calcAlpha(simData.x)', storageTimes)';
     if iDT ~= nDT
-        xStorage(:,:,iDT) = simData.x(:,validIdx);
-        alphaStorage(:,iDT) = calcAlpha( simData.x(:,validIdx));  
+        xStorage(:,:,iDT) = xInterp;
+        alphaStorage(:,iDT) = alphaInterp;
     else
-        refX = simData.x(:,validIdx);
-        refAlpha = calcAlpha( simData.x(:,validIdx));  
+        refX = xInterp;
+        refAlpha = alphaInterp;
     end
 end
 
@@ -50,10 +54,10 @@ for iState = 1:const.nStates
     hStates(end+1) = subplot(2,3,iState);
     hold on;
     for iDT = 1:nDT - 1
-        plot(storageTimes, squeeze(xStorage(iState,:,iDT))*const.statePlottingSF(iState))
+        plot(storageTimes, squeeze(logRelDiffX(iState,:,iDT)));
     
         xlabel('Time (s)');
-        ylabel(sprintf('%s (%s)', const.stateName{iState}, const.statePlottingUnits{iState}));
+        ylabel(sprintf('%s (%s)', const.stateNames{iState}, const.statePlottingUnits{iState}));
         grid on;  
         legend();
         ax = gca;
@@ -63,5 +67,5 @@ for iState = 1:const.nStates
 end
 
 
-% plotSimulationResults(simDataStorage, dtNames);
+plotSimulationResults(simDataStorage, dtNames);
 
