@@ -1,4 +1,4 @@
-function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(mode)
+function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(mode, const)
     %{
         This function acts as a master source of truth for all forward UQ
         perturbations and their associated distributions.
@@ -74,15 +74,23 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
             stochasticParam = {CMalpha, V, theta, h};
 
         case lower('Cmalpha-GP-staticMean')
+            %{
+                Constant mean and tuned parameters to try and make response
+                look similar to static covariance case e.g. +/- 30% at
+                3-sigma
+            %}
             stochasticParamGP.meanFunction = @(t) -2.1335*ones(size(t)); % same as normal value
-            targetSigma = 2.1335/10;
-            stochasticParamGP.sigma = targetSigma / 5; % tuned to give nice response
-            stochasticParamGP.l = 40; % Tuned
+            targetSigma = 2.1335/10; % 10% variation in true
+            sigmaSF = 1.0; % SF = 1 --> +-50% variation, SF = 0.75 --> +/- 30% total variation
+            stochasticParamGP.sigma = targetSigma*sigmaSF; % tuned to give nice response (not too wide)
             stochasticParamGP.YtruncSigma = 3;
             stochasticParamGP.inputVariableMin = 0;
-            stochasticParamGP.inputVariableMax = 20; % notinally time, but might change
-            stochasticParamGP.truncErrorMSE = 0.01; % 1% trunc error for KLE
-           
+            stochasticParamGP.inputVariableMax = const.tEnd; % notinally time, but might change
+            lSF = 0.32; % tuned to give approximately 10% MSE with d = 3;
+            stochasticParamGP.l = const.tEnd*2*lSF; % Tuned to achieve around d = 3
+            % stochasticParamGP.truncErrorMSE = 0.1; % 1% trunc error for KLE
+            stochasticParamGP.d = 3;
+
             lambdaOptions = struct();
             lambdaOptions.mode = 'approximate';
             lambdaOptions.k = 200; % Assuming 100 eigenvalues beyond current eval adequate
@@ -94,13 +102,18 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
             fGP = true;
 
             % Any static parameters can go here
-            stochasticParam = {theta};
+            % TODO - for SOBOL indices add these parameters in as required
+            stochasticParam = {};
 
-            % TODO
-        case lower('Cmalpha-GP-linearMean')
-            % TODO
-        case lower('Cmalpha-GP-integralMean')
-            % TODO
+            %% TODO - if needed
+        % case lower('Cmalpha-GP-linearMean')
+        % 
+        %     stochasticParam = {};
+        %     % TODO
+        % case lower('Cmalpha-GP-integralMean')
+        % 
+        %     stochasticParam = {};
+        %     % TODO
 
     end
 end

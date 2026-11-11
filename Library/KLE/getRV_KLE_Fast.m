@@ -13,7 +13,9 @@ nY = size(Y,2);
 if nY > 1
     x = repmat(x, 1, nY);
 end
+d = size(phiMatrix, 2);
 
 % Matrix goes fast?
-x = x + phiMatrix*(dataKLE.lambda.^(0.5) .* Y);
+lambda = dataKLE.lambda(1:d).^(0.5); lambda = lambda(:); % force size
+x = x + phiMatrix*(lambda .* Y);
 end

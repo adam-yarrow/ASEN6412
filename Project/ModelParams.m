@@ -7,7 +7,7 @@ function [const] = ModelParams(varargin)
     const = struct();
 
     const.dT = 1E-2;
-    const.tEnd = 20;
+    const.tEnd = 11; % 10 seconds of ring out time after 1 second step
     const.continuous = true;
     
     const.nStates = 5;
@@ -84,9 +84,12 @@ function [const] = ModelParams(varargin)
     const.controller.sysID.fActive = true;
     const.controller.sysID.mode = 'sine'; % {'step','sine'}
 
+    % Step of fin deflections (zero to max to min to zero) - e.g. impulse
+    % response ID)
     const.controller.sysID.stepDuration = 0.1; % s
 
-    const.controller.sysID.sineDuration = 3; % s
+    % Sine sweep of fin deflections
+    const.controller.sysID.sineDuration = 1; % s
     const.controller.sysID.sineFreq = 1; % Hz
 
     %% Initial Conditions (Default values)

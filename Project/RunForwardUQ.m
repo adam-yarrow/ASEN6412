@@ -26,7 +26,7 @@ const.aero.dynDeriv.model = 'off';
 % Random Inputs
 inputVarianceMode = 'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
 [stochasticParam, stochasticParamGP, fGP] = ...
-    ForwardUqPerturbationVars(inputVarianceMode);
+    ForwardUqPerturbationVars(inputVarianceMode, const);
 
 dInputs = numel(stochasticParam);
 
@@ -41,7 +41,7 @@ end
 Nmc = 100;
 
 % Stochastic Collocation Params
-levelSCC = 9; % Level for smolyak sparse grid
+levelSCC = 5; % Level for smolyak sparse grid
 
 
 %% Baseline MC Method
@@ -64,7 +64,8 @@ plotSimulationResults(rawData_MC.simData,[]);
 % If bi-modal stochastic collocation may break down/representing the states
 % with just 2 moments will be inappropriate (e.g. may need 3rd and 4th
 % moment or PDF too).
-plotMC_HistogramsInteractive(const, rawData_MC);
+nSamplesPerBin = 10;
+plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 
 %% Stochastic Colloc
 % Want to use a sparse CC grid for implementation ease & ability to check

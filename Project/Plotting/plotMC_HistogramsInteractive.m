@@ -1,4 +1,4 @@
-function plotMC_HistogramsInteractive(const, rawData, initialTime)
+function plotMC_HistogramsInteractive(const, rawData, nSamplesPerBin, initialTime)
     %{
         Interactive histograms of the MC state response.
         Slider scrubs through time; the edit box sets the time step
@@ -9,7 +9,8 @@ function plotMC_HistogramsInteractive(const, rawData, initialTime)
     times  = rawData.simData{1}.times(:);
     dtMin  = median(diff(times));            % native sample spacing
     dt     = dtMin;
-    if nargin < 3, initialTime = times(1); end
+    if nargin < 4, initialTime = times(1); end
+    if nargin < 3, nSamplesPerBin = 50; end
 
     nPlots = const.nStates + 1;              % states + alpha
     frameTimes = []; frameIdx = [];          % set in rebuildFrames
@@ -63,10 +64,10 @@ function plotMC_HistogramsInteractive(const, rawData, initialTime)
     fig.WindowKeyPressFcn = @onKey;                             % left/right arrows
     fig.CloseRequestFcn   = @onClose;                           % clean up timer
 
-    rebuildFrames(initialTime);                                 % <-- add this
+    rebuildFrames(initialTime, nSamplesPerBin);                             
 
     % ================= nested functions =================
-    function rebuildFrames(tKeep)
+    function rebuildFrames(tKeep, nSamplesPerBin)
         frameTimes = (times(1):dt:times(end))';
         if numel(frameTimes) < 2, frameTimes = times([1 end]); end
         frameIdx = interp1(times, 1:numel(times), frameTimes, 'nearest');
@@ -74,11 +75,11 @@ function plotMC_HistogramsInteractive(const, rawData, initialTime)
         [~,k0] = min(abs(frameTimes - tKeep));
         sld.Min = 1; sld.Max = n; sld.Value = k0;
         sld.SliderStep = [1/(n-1), min(1,10/(n-1))];
-        drawFrame(k0);
+        drawFrame(k0, nSamplesPerBin);
     end
 
     function onSliderMoved()
-        drawFrame(round(sld.Value));
+        drawFrame(round(sld.Value), nSamplesPerBin);
     end
 
     function onStepChanged(~,~)
@@ -88,7 +89,7 @@ function plotMC_HistogramsInteractive(const, rawData, initialTime)
         end
         dt = max(newDt, dtMin);          % can't be finer than the data
         edtDt.String = num2str(dt);
-        rebuildFrames(frameTimes(round(sld.Value)));
+        rebuildFrames(frameTimes(round(sld.Value)), nSamplesPerBin);
     end
 
     function onKey(~,evt)
@@ -98,21 +99,21 @@ function plotMC_HistogramsInteractive(const, rawData, initialTime)
         end
     end
 
-    function drawFrame(k)
+    function drawFrame(k, nSamplesPerBin)
         ti = frameIdx(k);
         for i = 1:const.nStates
             data = const.statePlottingSF(i) * squeeze(rawData.x(i,ti,:));
-            setHist(h(i), data);
+            setHist(h(i), data, nSamplesPerBin);
         end
-        setHist(h(nPlots), rad2deg(1) * squeeze(rawData.alpha(ti,:))');
+        setHist(h(nPlots), rad2deg(1) * squeeze(rawData.alpha(ti,:))', nSamplesPerBin);
         lblTime.String = sprintf('T = %.2f', times(ti));
         title(tl, sprintf('MC State Variable Histograms at T = %.2f', times(ti)));
         drawnow limitrate
     end
 
-    function setHist(hh, data)
+    function setHist(hh, data, nSamplesPerBin)
         hh.Data    = data(:);
-        hh.NumBins = max(1, round(numel(data)/50));   % ~50 samples per bin
+        hh.NumBins = max(1, round(numel(data)/nSamplesPerBin));
     end
 
     function onPlayPressed(~,~)

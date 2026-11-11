@@ -1,14 +1,17 @@
 
+
 % G = gaussian process part of Cmalpha
+
+
+tMax = 10;
+tMin = 0;
+
 
 muG = 0;
 targetSigma = 2.1335/10;
-sigmaGxx = targetSigma / 5;
-lGxx = 40;
+sigmaGxx = targetSigma * 0.75; %/5
+lGxx = tMax*2*0.32;
 
-
-tMax = 20;
-tMin = 0;
 
 Ktrunc = 3;
 
@@ -22,13 +25,15 @@ lambdaOptions = struct();
 lambdaOptions.mode = 'approximate';
 lambdaOptions.k = 200; % Assuming 100 eigenvalues beyond current eval adequate
 lambdaOptions.maxIts = 100;
-lambdaOptions.fPlot = true;
+lambdaOptions.fPlot = false;
 
 
-truncErrorMSE = 0.01; % 1% truncation error
+truncErrorMSE = 0.1; % 10% truncation error
 
 [d, lambda, omega] = findMinNumLambdaKLE(truncErrorMSE, ...
                                     aGxx, lGxx, sigmaGxx, lambdaOptions);
+
+d
 
 
 dataKLE = generateKLE_Struct(lambda, omega, meanGFunc, aGxx, d);
@@ -37,7 +42,7 @@ dataKLE = generateKLE_Struct(lambda, omega, meanGFunc, aGxx, d);
 fprintf('min d = %i\n',d);
 
 % Plot realisations
-nInstances = 3;
+nInstances = 10;
 % Y = randn(d, nInstances);
 
 % Truncated Y
@@ -48,6 +53,11 @@ gd_vs_t = getRV_KLE(t, dataKLE, Y);
 
 plotIndependentRealisations("Part A - l=2", t, gd_vs_t);
 
+
+figure();
+plot(t', (phiMatrix.*lambda(1:d)));
+grid on;
+
 %% Test Distributions
 nInstances = 1000;
 Y = trandn(-Ktrunc*ones(d*nInstances,1), Ktrunc*ones(d*nInstances,1));
@@ -56,9 +66,12 @@ gDistrib = getRV_KLE(t, dataKLE, Y);
 
  figure();
  hold on;
+ % cnt = 0
 for i = 1:numel(t)
-
-   histogram(gDistrib(i,:));
+    if mod(i,50)
+        histogram(gDistrib(i,:));
+        % cnt = cnt + 1
+    end
 end
 
 
