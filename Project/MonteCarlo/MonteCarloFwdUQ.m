@@ -42,7 +42,9 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
     end
     
     % Calculate Statistics
-    [xStats, alphaStats] = CalculateMC_Statistics(xStorage, alphaStorage);
+    % [xStats, alphaStats] = CalculateMC_Statistics(xStorage, alphaStorage);
+    [xStats, alphaStats] = CalculateMC_StatisticsFast(xStorage, alphaStorage); % 50x's faster than my implementation
+ 
    
     % Package raw data
     rawData.x = xStorage;
