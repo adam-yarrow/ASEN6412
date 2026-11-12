@@ -21,7 +21,7 @@ function [simData] = Simulation(fController, const)
     %% Run Sim
     xResults = zeros(nTimes, const.nStates);
     if const.continuous == true
-        options = odeset('OutputFcn',@ode45OutputFunc);
+        options = odeset('OutputFcn',@ode45OutputFunc,'RelTol',const.odeOpts.relTol);
         [~, xResults] = ode45(@(t,x) plantDynCL(t,x,fController, const), ...
                                 simData.times, xIC, options);
     else

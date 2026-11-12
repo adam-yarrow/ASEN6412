@@ -7,36 +7,35 @@ Startup();
 const = ModelParams(); % Baseline Parameters
 controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t));
 
-dToptions = [0.1, 0.05, 0.01, 0.001, 0.0001];
-storageTimes = 0:dToptions(1):const.tEnd;
-nTimes = numel(storageTimes);
+relErrorTol = [1E-1, 1E-2, 1E-3, 1E-4, 1E-5, 1E-6]; %[0.1, 0.05, 0.01, 0.001, 0.0001];
+times = 0:const.dT:const.tEnd;
+nTimes = numel(times);
 
-nDT = numel(dToptions);
+nRelTol = numel(relErrorTol);
 
-xStorage = NaN(const.nStates, nTimes, nDT-1);
-alphaStorage = NaN(nTimes, nDT-1);
-simDataStorage = cell(nDT,1);
+xStorage = NaN(const.nStates, nTimes, nRelTol-1);
+alphaStorage = NaN(nTimes, nRelTol-1);
+simDataStorage = cell(nRelTol,1);
 
-
-%% 
-error('this gives identical results because RK45 fixes error levels')
 
 refX = [];
 refAlpha = [];
 
-dtNames = cellfun(@num2str, num2cell(dToptions), 'UniformOutput', false);
+relTolNames = cell(nRelTol,1); % cellfun(@num2str, num2cell(relErrorTol), 'UniformOutput', false);
 
-for iDT = 1:nDT
-    const.dT = dToptions(iDT);
+for i = 1:nRelTol
+
+    const.odeOpts.relTol = relErrorTol(i);
     simData = Simulation(controller, const);
+    simDataStorage{i} = simData;
 
-    simDataStorage{iDT} = simData;
+    xInterp = interp1(simData.times, simData.x', times)';
+    alphaInterp = interp1(simData.times, calcAlpha(simData.x)', times)';
 
-    xInterp = interp1(simData.times, simData.x', storageTimes)';
-    alphaInterp = interp1(simData.times, calcAlpha(simData.x)', storageTimes)';
-    if iDT ~= nDT
-        xStorage(:,:,iDT) = xInterp;
-        alphaStorage(:,iDT) = alphaInterp;
+    relTolNames{i} = sprintf('RelTol = 1E%i', log10(relErrorTol(i)));
+    if i ~= nRelTol
+        xStorage(:,:,i) = xInterp;
+        alphaStorage(:,i) = alphaInterp;
     else
         refX = xInterp;
         refAlpha = alphaInterp;
@@ -53,11 +52,11 @@ hStates = [];
 for iState = 1:const.nStates
     hStates(end+1) = subplot(2,3,iState);
     hold on;
-    for iDT = 1:nDT - 1
-        plot(storageTimes, squeeze(logRelDiffX(iState,:,iDT)));
+    for i = 1:nRelTol - 1
+        plot(times, squeeze(logRelDiffX(iState,:,i)),'DisplayName',relTolNames{i});
     
         xlabel('Time (s)');
-        ylabel(sprintf('%s (%s)', const.stateNames{iState}, const.statePlottingUnits{iState}));
+        ylabel(sprintf('%s', const.stateNames{iState}));
         grid on;  
         legend();
         ax = gca;
@@ -66,6 +65,23 @@ for iState = 1:const.nStates
     end
 end
 
+hStates(end+1) = subplot(2,3,6);
+hold on;
+for i = 1:nRelTol - 1
+    plot(times, squeeze(logRelDiffAlpha(:,i)),'DisplayName',relTolNames{i});
 
-plotSimulationResults(simDataStorage, dtNames);
+    xlabel('Time (s)');
+    ylabel(sprintf('%s', '\alpha'));
+    grid on;  
+    legend();
+    ax = gca;
+    ax.LineWidth = 2;  % Thicker axes
+    ax.FontSize = 12;
+end
+
+titleText = sprintf(['Logarithm of the Relative Error Between Different ODE45', ...
+    'Integration Error Tolerances with a Reference of 1E%i'], log10(relErrorTol(end)));
+sgtitle(titleText);
+
+plotSimulationResults(simDataStorage, relTolNames);
 

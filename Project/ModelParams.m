@@ -9,9 +9,10 @@ function [const] = ModelParams(varargin)
     const.dT = 1E-2;
     const.tEnd = 11; % 10 seconds of ring out time after 1 second step
     const.continuous = true;
+    const.odeOpts.relTol = 1E-4; % See grid convergence study
     
     const.nStates = 5;
-    const.stateNames = {'V','gamma','q','theta','h'};
+    const.stateNames = {'V','\gamma','\q','\theta','h'};
     const.stateUnits = {'m/s','rad','rad/s','rad','m'};
     const.statePlottingUnits = {'m/s','deg','deg/s','deg','km'};
     const.statePlottingSF = [1, rad2deg(1), rad2deg(1), rad2deg(1), 1E-3];
