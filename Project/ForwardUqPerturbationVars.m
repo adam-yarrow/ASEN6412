@@ -23,10 +23,12 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
 
     %% Aero Random Var Options
     CMalpha.path = 'aero.CM_alpha';
-    CMalpha.distribution = 'trunc-gaussian';
-    CMalpha.mean = -2.1335;
-    CMalpha.sigma = 2.1335/10; % Assuming 10% variation per sigma
-    CMalpha.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
+    CMalpha.distribution = 'uniform'; %'trunc-gaussian';
+    CMalpha.min = -2.1335*1.3;
+    CMalpha.max = -2.1335*0.7;
+    % CMalpha.mean = -2.1335;
+    % CMalpha.sigma = 2.1335/10; % Assuming 10% variation per sigma
+    % CMalpha.truncatedSigmaLevel = 3; % truncate at +/- 3 sigma (+/- 30% variation)
 
     %% TODO - decide if changing these values too
     CMalphaSq.path = 'aero.CM_alphaSq';
@@ -43,10 +45,12 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
     
     %% IC Random Var Options
     V.path = 'xIC.V';
-    V.distribution = 'trunc-gaussian'; 
-    V.mean = 1500;
-    V.sigma = 20; % 3-sigma = 60 m/s (e.g. +/- ~0.2 of a Mach number if a = 300 m/s)
-    V.truncatedSigmaLevel = 3;
+    V.distribution = 'uniform';%'trunc-gaussian'; 
+    V.min = 1500 - 60;
+    V.max = 1500 + 60;
+    % V.mean = 1500;
+    % V.sigma = 20; % 3-sigma = 60 m/s (e.g. +/- ~0.2 of a Mach number if a = 300 m/s)
+    % V.truncatedSigmaLevel = 3;
     
     theta.path = 'xIC.theta';
     theta.distribution = 'uniform'; % Proxy for alpha (if gamma = 0)
@@ -54,10 +58,12 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
     theta.max = deg2rad(1); % +/- 1 deg alpha pretty important
     
     h.path = 'xIC.h';
-    h.distribution = 'trunc-gaussian';
-    h.mean = 28000;
-    h.sigma = 100/3; % 3-sigma = 100 m
-    h.truncatedSigmaLevel = 3;
+    h.distribution = 'uniform';%'trunc-gaussian';
+    h.min = 28000 - 100;
+    h.max = 28000 + 100;
+    % h.mean = 28000;
+    % h.sigma = 100/3; % 3-sigma = 100 m
+    % h.truncatedSigmaLevel = 3;
 
     %% Process Different Options Based On Mode
     fGP = false;

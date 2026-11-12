@@ -13,7 +13,7 @@ sigmaGxx = targetSigma * 0.75; %/5
 lGxx = tMax*2*0.32;
 
 
-Ktrunc = 3;
+Ktrunc = 1; %3;
 
 t = (tMin:const.dT:tMax)';
 
@@ -33,9 +33,8 @@ truncErrorMSE = 0.1; % 10% truncation error
 [d, lambda, omega] = findMinNumLambdaKLE(truncErrorMSE, ...
                                     aGxx, lGxx, sigmaGxx, lambdaOptions);
 
-d
-
-
+lambda = lambda(1:d);
+omega = omega(1:d);
 dataKLE = generateKLE_Struct(lambda, omega, meanGFunc, aGxx, d);
 [phiMatrix] = MakePhiMatrix(t, dataKLE);
 
@@ -46,10 +45,15 @@ nInstances = 10;
 % Y = randn(d, nInstances);
 
 % Truncated Y
-Y = trandn(-Ktrunc*ones(d*nInstances,1), Ktrunc*ones(d*nInstances,1));
-Y = reshape(Y,d, nInstances);
+% Y = trandn(-Ktrunc*ones(d*nInstances,1), Ktrunc*ones(d*nInstances,1));
+% Y = reshape(Y,d,nInstances);
 
-gd_vs_t = getRV_KLE(t, dataKLE, Y);
+Y = rand(d,nInstances)*2 - 1; % trying uniform Yi = [-1,1]
+
+gd_vs_t = NaN(numel(t), nInstances);
+for i = 1:nInstances
+    gd_vs_t(:,i) = getRV_KLE(t, dataKLE, Y(:,i));
+end
 
 plotIndependentRealisations("Part A - l=2", t, gd_vs_t);
 

@@ -76,7 +76,18 @@ function [const] = ModelParams(varargin)
     const.aero.dynDeriv.CM_q_static = -0.2*400; 
 
     %% Sensor Model
+    sigmaV = 10; % m/s
+    sigmaGamma = deg2rad(1); % rad
+    sigmaQ = deg2rad(1); % rad/s
+    sigmaTheta = deg2rad(1); % rad
+    sigmaH = 20; % m
+    Sxx = [sigmaV, sigmaGamma, sigmaQ, sigmaTheta, sigmaH]';
+    const.measModel.Cxx = diag(Sxx).^2;
+    const.measModel.CxxEstimator = 1*diag(Sxx).^2; % Can make estimator Cxx worse or better
+    const.measModel.C = eye(5); % Can remove terms if required
     % TODO for inverse problem
+
+    warning('TODO make measurement model disable correct variables and Cxx if we remove a row')
 
     %% Constraints
     const.constraint.deltaEBounds = [-deg2rad(30), deg2rad(30)];

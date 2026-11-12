@@ -43,7 +43,6 @@ function [simData] = Simulation(fController, const)
 
     %% Extract Control Actions and other Useful Quantities
     simData.u = NaN(const.nInputs,nTimes);
-    simData.slackVar = NaN(nTimes,1);
     simData.qBar = NaN(nTimes,1);
     for i = 1:nTimes
         %Control Input

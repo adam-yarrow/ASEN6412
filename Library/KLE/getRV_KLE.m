@@ -22,7 +22,8 @@ phiMatrix = NaN(nT, nY);
 for i = 1:dataKLE.d
     phiMatrix(:,i) = evalEigenfunctionKLE(dataKLE.omega(i), dataKLE.a, i, tTilde);
 end
+lambda = dataKLE.lambda(:);
 
 % Matrix goes fast?
-x = x + phiMatrix*(dataKLE.lambda.^(0.5) .* Y);
+x = x + phiMatrix*(lambda.^(0.5) .* Y);
 end

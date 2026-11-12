@@ -20,9 +20,6 @@ controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t
 
 times = 0:const.dT:const.tEnd;
 
-% Forcing Cmq off (like original paper)
-const.aero.dynDeriv.model = 'off'; 
-
 % Random Inputs
 inputVarianceMode = 'static-Cmalpha-wIC'; %'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
 [stochasticParam, stochasticParamGP, fGP] = ...
@@ -38,11 +35,11 @@ if fGP
 end
 
 % MC Params
-Nmc = 6017; % equiv number of points to spquad(3,8)
+Nmc = 2561; % equiv number of points to spquad(3,5)
 nSamplesPerBin = 100; % For plotting interactive histograms
 
 % Stochastic Collocation Params
-levelSCC = 8; % Level for smolyak sparse grid
+levelSCC = 7; % Level for smolyak sparse grid
 
 % Plotting
 fPlotSimData = false;

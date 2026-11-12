@@ -17,8 +17,8 @@ plotSimulationResults({simData,simData_CmqOn}, {'Cmq - OFF','Cmq - STATIC'});
 
 
 %% Discrete Bayes filter for 1 variable on Basic Test
-CmalphaMin = 0.8*const.aero.CM_alpha;
-CmalphaMax = 1.2*const.aero.CM_alpha;
+CmalphaMin = 1.2*const.aero.CM_alpha;
+CmalphaMax = 0.8*const.aero.CM_alpha;
 theta = linspace(CmalphaMin, CmalphaMax, 500); % uniform grid of theta
 
 fTheta = ones(500,1) ./ (CmalphaMax - CmalphaMin); % Uniform prior
@@ -30,7 +30,7 @@ randVars = randn(size(simData.x));
 y = simData.x + Sxx*randVars; % Added zero mean additive gaussian white noise
 
 % Try Discrete Bayes Filter
-[fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fTheta, PDControl, tEnd, const, xIC, CxxEstimator);
+[fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fTheta, PDControl, const, CxxEstimator);
 
 figure();
 plot(theta, fTheta_Y);
@@ -183,12 +183,12 @@ plot(times, deltaE_Mean - sqrt(deltaE_Var));
 
 %% Discrete Bayes Filter Functions
 % now need likelihood function
-function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl, tEnd, const, xIC, CxxEstimator)
+function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl, const, CxxEstimator)
     % Log likelihood
   
     % Run simulation using theta_i parameter
     const.aero.CM_alpha = theta_i; 
-    [simData] = Simulation(xIC, PDControl, const); % Assuming you know xIC
+    [simData] = Simulation(PDControl, const); % Assuming you know xIC
     measInnov = y - simData.x;
 
     % Now every meas innov should be iid under error distribution
@@ -206,13 +206,13 @@ function [fY_Theta, fY_Theta_i, measInnov] = fYgivenTheta(y, theta_i, PDControl,
 end
 
 % Discrete Bayes Filter for a single trajectory
-function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fThetaPrior, PDControl, tEnd, const, xIC, CxxEstimator)
+function [fTheta_Y, likelihoodVsTimeAndTheta, measInnov] = DiscreteBayesFilter(theta, y, fThetaPrior, PDControl, const, CxxEstimator)
     nTheta = numel(theta);
     fTheta_Y = zeros(nTheta,1);
     likelihoodVsTimeAndTheta = NaN(size(y,2), nTheta);
     measInnov = NaN(size(y,1), size(y,2), nTheta);
     for i = 1:nTheta
-        [logLikelihood, likelihoodVsTimeAndTheta(:,i), measInnov(:,:,i)] = fYgivenTheta(y, theta(i), PDControl, tEnd, const, xIC, CxxEstimator);
+        [logLikelihood, likelihoodVsTimeAndTheta(:,i), measInnov(:,:,i)] = fYgivenTheta(y, theta(i), PDControl, const, CxxEstimator);
         fTheta_Y(i) = logLikelihood + log(fThetaPrior(i));
     end
 
