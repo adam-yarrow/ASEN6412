@@ -23,6 +23,9 @@ function [xStats, alphaStats] = CalculateMC_StatisticsFast(xStorage, alphaStorag
 
     diagIdx = 1:(nStates + 1):nStates^2;   % linear indices of the diagonal
 
+    t0 = tic;
+    wb = progressBar(1, nAbsisscas, t0, [], 'MC Statistics Processing');
+
     for i = 1:nMC
         % ---- states: update running mean and scatter matrix ----
         x     = xStorage(:,:,i);
@@ -49,5 +52,9 @@ function [xStats, alphaStats] = CalculateMC_StatisticsFast(xStorage, alphaStorag
             v = reshape(v(diagIdx,:), nStates, 1, nTimes);   % variances (unscaled)
             xStats.corr(:,:,:,i) = M2 ./ sqrt(v .* permute(v, [2 1 3]));
         end
+
+
+        % Progress bar
+        wb = progressBar(i, nMC, t0, wb);  
     end
 end

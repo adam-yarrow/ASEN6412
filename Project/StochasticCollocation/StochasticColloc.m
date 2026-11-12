@@ -92,7 +92,7 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
    
     % Run Stoch Colloc
     t0 = tic;
-    wb = progressBar(1, nAbsisscas, t0, [], 'MC Runs');
+    wb = progressBar(1, nAbsisscas, t0, [], 'SC Runs');
     simDataStorage = cell(nAbsisscas, 1);
 
     xStats = struct();
