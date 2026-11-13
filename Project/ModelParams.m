@@ -116,7 +116,7 @@ function [const] = ModelParams(varargin)
 
     %% Moving Mean CM_Alpha
     const.aero.movMeanCM_alpha.fActive = false; % NOTE: can't be active with a moving mean present in GP
-    const.aero.movMeanCM_alpha.deriv = 0.0639/2; % /rad/s - 1.5% destabilizing change in CM_alpha per second
+    const.aero.movMeanCM_alpha.deriv = 0.0639/2; % /rad/s  1.5% destabilizing change in CM_alpha per second
     
 
 

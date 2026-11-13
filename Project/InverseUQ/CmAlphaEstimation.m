@@ -12,7 +12,7 @@ function [fTheta_Y, stats, rawData] = CmAlphaEstimation(yMeas, rawTheta, ...
     % Generate Trapezoidal Integration weights - using trapz as have discrete
     % grid that is fairly sparse
     dTheta = rawTheta(2) - rawTheta(1);
-    integrationWeightsTheta = dTheta/2 * [1; ones(nTheta-2,1); 1]; % TrapZ weights
+    integrationWeightsTheta = dTheta/2 * [1; 2*ones(nTheta-2,1); 1]; % TrapZ weights
     
     % Prior - Uniform
     thetaMax = max(rawTheta);
