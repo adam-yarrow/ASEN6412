@@ -1,4 +1,4 @@
-function ReconstructCM_AlphaGP(Y, times, dataKLE, idxToPlot)
+function CM_alpha = ReconstructCM_AlphaGP(Y, times, dataKLE, idxToPlot)
     %{
         Plots the CM_alpha values as a function of time for different MC
         instances to see how they behave.

@@ -6,14 +6,19 @@ function [CL,CD,CM,CMq] = getAeroCoeffs(alpha,deltaE,const, t, x)
     if c.GP.fActive
         %NOTE: might change from time variable to some psuedo heat load
         %variable in future hence passing in state (x) as well as time.
-        CM_alpha = getRV_KLE(t, c.GP.dataKLE, c.GP.Y);
-    else
-        CM_alpha = c.CM_alpha;
-    end
+        CM_alpha = getRV_KLE(t, c.GP.dataKLE, c.GP.Y);        
+      
+    elseif c.movMeanCM_alpha.fActive  % Linear model in alpha
+        CM_alpha = c.CM_alpha + c.movMeanCM_alpha.deriv * t;   
+       
+    elseif c.polyCM_alpha.fActive % Polynomial alpha model
+        CM_alpha = 0;
+        for i = 1:numel(c.polyCM_alpha.coeff)
+            CM_alpha = CM_alpha + c.polyCM_alpha.coeff(i)*t.^(i-1);
+        end  
 
-    % Linear model in alpha
-    if c.movMeanCM_alpha.fActive
-        CM_alpha = CM_alpha + c.movMeanCM_alpha.deriv * t;   
+    else % Default case
+        CM_alpha = c.CM_alpha;
     end
 
     % Standard Static Coefficients vs Time

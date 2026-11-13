@@ -119,6 +119,9 @@ function [const] = ModelParams(varargin)
     const.aero.movMeanCM_alpha.deriv = 0.0639/2; % /rad/s  1.5% destabilizing change in CM_alpha per second
     
 
+    %% Polynomial CM_Alpha
+    const.aero.polyCM_alpha.fActive = false;
+    const.aero.polyCM_alpha.coeff = [];
 
      %% Pull out specific parameter if required
     nArgs = length(varargin);

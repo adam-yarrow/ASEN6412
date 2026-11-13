@@ -1,3 +1,4 @@
+function dFdx = SymbolicJacobian()
 %% Generating Jacobian of nonlinear dynamics symbolically
 % NOTE: assuming density is constant and not a function of altitude
 
@@ -40,4 +41,5 @@ disp(dFdx);
 % Generate the callable numerical function
 matlabFunction(dFdx, 'File', 'compute_A_matrix', ...
     'Vars', {x, rho m J g cBar S deltaE CL_alpha CL_deltaE CL_0 CD_alphaSq CD_alpha CD_deltaE CD_deltaESq CD_0 CM_alphaSq CM_alpha CM_deltaE CM_0});
-% Inputs to the function : debris_state_k, gps_state_k, rx_state_k, fT_val, c_val
+
+end

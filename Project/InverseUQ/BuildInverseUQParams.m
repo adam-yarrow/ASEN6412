@@ -14,6 +14,9 @@ function const = BuildInverseUQParams(mode, covInflationSF)
         case lower('linear-cmAlpha')
             const.aero.movMeanCM_alpha.fActive = true;
 
+        case lower('poly-cmAlpha')
+            const.aero.polyCM_alpha.fActive = true;
+
         case lower('Cmalpha-GP-staticMean') 
             const = buildBaselineGPparam(const, covInflationSF);
                 
