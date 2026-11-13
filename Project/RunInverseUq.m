@@ -33,11 +33,11 @@ plotSimulationResults({simData, simDataNoisy},{'Truth Trajectory','Measurements'
     Considers the case of searching for Cm_alpha only, even if model is of
     a higher order
 %}
-CmalphaMin = 1.5*constEstimator.aero.CM_alpha;
-CmalphaMax = 0.5*constEstimator.aero.CM_alpha;
+CmalphaMin = 1.5*constReality.aero.CM_alpha;
+CmalphaMax = 0.5*constReality.aero.CM_alpha;
 
 % Variable of interest
-nCmalpha = 1000;
+nCmalpha = 500;
 rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
 dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
@@ -51,8 +51,8 @@ nWorkers = 8;
 
 
 %% Direct Bayes Approach - Cm_Alpha and D/Dt Cm_alpha (linear model)
-CmalphaMin = 1.1*constEstimator.aero.CM_alpha;
-CmalphaMax = 0.9*constEstimator.aero.CM_alpha;
+CmalphaMin = 1.1*constReality.aero.CM_alpha;
+CmalphaMax = 0.9*constReality.aero.CM_alpha;
 
 % Variables of interest
 nCmalpha = 50;
@@ -60,7 +60,7 @@ rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
 dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
 derivCmAlphaMin = 0; % assume you know thermal loading bends you in one direction
-derivCmAlphaMax = -constEstimator.aero.CM_alpha*0.4/10; % max of +4% per second
+derivCmAlphaMax = -constReality.aero.CM_alpha*0.4/10; % max of +4% per second
 nDeriv = 50;
 
 rawDeriv = linspace(derivCmAlphaMin, derivCmAlphaMax, nDeriv);
