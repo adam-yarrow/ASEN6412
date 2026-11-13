@@ -1,4 +1,4 @@
-function [x0, P, details] = NLS(x0_0,h,H,y,R,options)
+function [x0, P, details] = NLS(x0_0,h,H,y,R,options,fPrintUpdates)
 %{
 Non-linear least squares solver using Gauss-Newton algorithm.
 
@@ -35,7 +35,6 @@ x0 = x0_0;
 
 while ~fConverged    
     nIts = nIts+1;
-    fprintf('NLS Iteration Number: %i\n', nIts);
 
     % Get Measurements and Gradient at new point
     y_k = h(x0);
@@ -64,9 +63,12 @@ while ~fConverged
     details.Jnls(end+1) = Jnls;
     details.x0Log(:,end+1) = x0;
 
-    fprintf('NLS Cost Function Value: %f\n', Jnls);
-    fprintf('NLS Current Estimate: '); disp(x0');
-    fprintf('-------------------------------------\n');
+    if fPrintUpdates
+        fprintf('NLS Iteration Number: %i\n', nIts);
+        fprintf('NLS Cost Function Value: %f\n', Jnls);
+        fprintf('NLS Current Estimate: '); disp(x0');
+        fprintf('-------------------------------------\n');
+    end
 
     % Check convergence
     [fConverged, details.convergenceTrigger] = checkConvergence(nIts, Jnls, Jnls_kt1, ...

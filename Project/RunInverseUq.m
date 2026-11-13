@@ -127,7 +127,7 @@ end
 
 %% NLS IC Sensitivity
 theta0_ConstRange = linspace(-1.5,-2.5, 10);
-nTerms = 6;
+nTerms = 5;
 polyOrder = nTerms - 1;
 nIC = numel(theta0_ConstRange);
 
@@ -181,3 +181,11 @@ grid on;
 xlabel('CM_alpha Constant Param IC');
 ylabel('MSE in CM_{\alpha}');
 title('NLS MSE vs NLS IC');
+
+%-1.94 with J = 0.452
+%% Bisection approach
+maxIts = 10;
+theta0RelTol = 1E-2;
+[theta, P, nlsDetails] = GoldenSearchNLS(-1.5, -2.5, maxIts, theta0RelTol, ...
+                    nTerms, mode_estimator, covInflationSF, yMeas, ...
+                    controller, true);
