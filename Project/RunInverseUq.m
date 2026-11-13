@@ -8,20 +8,19 @@
 % Fix rng
 rng(11112026,'twister');
 
-% Model Baseline
 Startup();
 
-const = ModelParams(); 
-% TODO - can put in some changes here if go for non constant etc.
-
-
+% Model Baseline
 controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t));
 
-times = 0:const.dT:const.tEnd;
 
 %% Generate Trajectory Instance
-[simData] = Simulation(controller, const);
-yMeas = getMeasurements(const, simData.x);
+% Real Simulation
+mode_reality = 'Cmalpha-GP-staticMean'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
+constReality = BuildInverseUQParams(mode_reality);
+
+[simData] = Simulation(controller, constReality);
+yMeas = getMeasurements(constReality, simData.x);
 
 simDataNoisy = simData;
 simDataNoisy.x = yMeas;
@@ -29,29 +28,54 @@ simDataNoisy.x = yMeas;
 % Plot truth and measurements
 plotSimulationResults({simData, simDataNoisy},{'Truth Trajectory','Measurements'});
 
+%% Direct Bayes Approach - Estimating Cm_alpha Only
+%{
+    Considers the case of searching for Cm_alpha only, even if model is of
+    a higher order
+%}
+CmalphaMin = 1.5*constEstimator.aero.CM_alpha;
+CmalphaMax = 0.5*constEstimator.aero.CM_alpha;
 
-%% Direct Bayes Approach - Estimating Static Cm_alpha
+% Variable of interest
+nCmalpha = 100;
+rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
+dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
-% Dummy testing fcn for now
+mode_estimator = 'Cmalpha-GP-staticMean'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
+covInflationSF = 0.5; % Used for GP only
+fPlot = true;
+nWorkers = 6;
 
-CmalphaMin = 1.5*const.aero.CM_alpha;
-CmalphaMax = 0.5*const.aero.CM_alpha;
-nTheta = 100;
-theta = linspace(CmalphaMin, CmalphaMax, nTheta)';
+[fTheta_Y, stats, rawData] = CmAlphaEstimation(yMeas, rawCmAlpha, mode_estimator, mode_reality, ...
+                                covInflationSF, fPlot, controller, nWorkers);
+
+
+%% Direct Bayes Approach - Cm_Alpha and D/Dt Cm_alpha (linear model)
+derivCmAlphaMin = 0; % assume you know thermal loading bends you in one direction
+derivCmAlphaMax = constEstimator.aero.CM_alpha*0.4/10; % max of 4% per second
+nDeriv = 100;
+
+rawDeriv = linspace(derivCmAlphaMin, derivCmAlphaMax, nDeriv);
+dDeriv = rawDeriv(2) - rawDeriv(1);
+
+[derivGrid, cmAlphaGrid] = meshgrid(rawDeriv, rawCmAlpha);
+rawTheta = [derivGrid(:), cmAlphaGrid(:)];
+
+
+% Integration weights 
+oneDimWeights_CmAlpha = dCmAlpha/2 * [1; ones(nCmAlpha-2,1); 1]; % TrapZ weights
+oneDimWeights_deriv = dDeriv/2 * [1; ones(nDeriv-2,1); 1];
+
+integrationWeights = oneDimWeights_CmAlpha*oneDimWeights';
 
 % uniform prior
-fThetaPrior = ones(size(theta))*(1/(CmalphaMax - CmalphaMin));
-thetaPath = {'aero.CM_alpha'};
+fPrior = ones(nDeriv, nCmalpha) * 1/((derivCmAlphaMax - derivCmAlphaMin)*(CmalphaMax - CmalphaMin));
+fPrior = fPrior(:);
 
-[fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, yMeas,...
-                                            fThetaPrior, ...
-                                            controller, const);
+[fTheta_Y_2D, stats_2D, rawData_2D] = LinearCmAlphaEstimation(yMeas, rawTheta, mode_estimator, mode_reality, ...
+                                covInflationSF, fPlot, controller, nWorkers,...
+                                integrationWeights, fPrior);
 
-figure();
-plot(theta, fTheta_Y);
-grid on;
-xlabel('Cm_alpha');
+%% TODO - could do p-test for each different case to see which is the most likely?
 
-
-%% TODO - test this with Cmalpha being a stochastic process
-%% OR - test with larger uncertainty/lack of observability?
+%% TODO - Cm_alpha and d/dt of Cmalpha grid

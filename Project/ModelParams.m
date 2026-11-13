@@ -12,7 +12,7 @@ function [const] = ModelParams(varargin)
     const.odeOpts.relTol = 1E-4; % See grid convergence study
     
     const.nStates = 5;
-    const.stateNames = {'V','\gamma','\q','\theta','h'};
+    const.stateNames = {'V','\gamma','q','\theta','h'};
     const.stateUnits = {'m/s','rad','rad/s','rad','m'};
     const.statePlottingUnits = {'m/s','deg','deg/s','deg','km'};
     const.statePlottingSF = [1, rad2deg(1), rad2deg(1), rad2deg(1), 1E-3];
@@ -85,9 +85,7 @@ function [const] = ModelParams(varargin)
     const.measModel.Cxx = diag(Sxx).^2;
     const.measModel.CxxEstimator = 1*diag(Sxx).^2; % Can make estimator Cxx worse or better
     const.measModel.C = eye(5); % Can remove terms if required
-    % TODO for inverse problem
-
-    warning('TODO make measurement model disable correct variables and Cxx if we remove a row')
+    % FIXME:make measurement model disable correct variables and Cxx if we remove a row
 
     %% Constraints
     const.constraint.deltaEBounds = [-deg2rad(30), deg2rad(30)];
@@ -116,6 +114,10 @@ function [const] = ModelParams(varargin)
     const.aero.GP.dataKLE = [];
     const.aero.GP.Y = [];
 
+    %% Moving Mean CM_Alpha
+    const.aero.movMeanCM_alpha.fActive = false; % NOTE: can't be active with a moving mean present in GP
+    const.aero.movMeanCM_alpha.deriv = 0.0639/2; % /rad/s - 1.5% destabilizing change in CM_alpha per second
+    
 
 
      %% Pull out specific parameter if required

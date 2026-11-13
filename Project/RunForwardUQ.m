@@ -44,11 +44,16 @@ levelSCC = 7; % Level for smolyak sparse grid
 % Plotting
 fPlotSimData = false;
 
+% Parallelising
+nWokers = 6;
+
 
 %% Baseline MC Method
 % Run MC
+tic;
 [xStats_MC, alphaStats_MC, rawData_MC] = MonteCarloFwdUQ(const,Nmc,controller,...
-    stochasticParam, stochasticParamGP);
+    stochasticParam, stochasticParamGP, nWorkers);
+test = toc
 
 % Plotting State Stats vs Time
 plotStateMoments(const, times, xStats_MC, alphaStats_MC, 'MC');

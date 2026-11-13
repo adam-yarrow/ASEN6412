@@ -1,6 +1,7 @@
 function [fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, y,...
                                             fThetaPrior, ...
-                                            controller, const)
+                                            controller, const, ...
+                                            nWorkers, integrationWeights)
     
     %{
         N-dimensional discrete Bayes filter. Calculates a discrete
@@ -18,13 +19,22 @@ function [fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, y,...
                 parameters (again flattened)
             controller = controller function
             const = baseline constants
+            integrationWeights = weights associated with each theta for
+                integrating out theta to get fY(y) for the bayes rule
+                denominator
         
         Outputs:
             fTheta_Y = posterior of size N x 1, corresponding to theta
             rawData = debugging structure
     %}
-%% NOTE: Could maybe try a sparse grid on this and then fit a response surface to it?
-
+    fNormalizeAsProbability = false;
+    if nargin < 8
+        fNormalizeAsProbability = true;
+    end
+    if nargin < 7
+        nWorkers = 0; % e.g. linear not parallel
+    end
+    
     %% Setup Storage
     [N, d] = size(theta);
     [nMeas, nTime] = size(y);
@@ -34,10 +44,11 @@ function [fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, y,...
     likelihoodVsTimeAndTheta = NaN(nTime, N);
     measInnov = NaN(nMeas, nTime, N);
 
-    tStart = tic;
-    wb = progressBar(0, N, tStart, [], 'Discrete Bayes Filter');
-    for iTheta = 1:N
-        currentTheta = {theta(iTheta,:)};
+    % tStart = tic;
+    % wb = progressBar(0, N, tStart, [], 'Discrete Bayes Filter');
+    WaitMessage = parfor_wait(N, 'Waitbar', true);
+    parfor (iTheta = 1:N, nWorkers)
+        currentTheta = theta(iTheta,:);
         [logLikelihood, ...
             likelihoodVsTimeAndTheta(:,iTheta),...
             measInnov(:,:,iTheta)] = logLikelihoodFcn(y, currentTheta, ...
@@ -46,9 +57,11 @@ function [fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, y,...
         % Update fTheta_Y vector
         fTheta_Y(iTheta) = logLikelihood + log(fThetaPrior(iTheta));
 
-        wb = progressBar(iTheta, N, tStart, wb, 'Discrete Bayes Filter');
+        % wb = progressBar(iTheta, N, tStart, wb, 'Discrete Bayes Filter');
+        WaitMessage.Send;
     end
 
+    WaitMessage.Destroy
     % Convert From Log to Normal Domain
     % fTot = LogSumExp(fTheta_Y);
     % fTheta_Y = exp(fTheta_Y - fTot);
@@ -57,16 +70,13 @@ function [fTheta_Y, rawData] = DiscreteBayesFilter(theta, thetaPath, y,...
     fTheta_Y = fTheta_Y - maxFTheta_Y; % rescale to avoid numerical issues
     fTheta_Y = exp(fTheta_Y);
 
-    %% FIXME - temporarily normalizing to a probability (not a density)
-    fTheta_Y = fTheta_Y ./ sum(fTheta_Y);
-
-    % Normalize into a Proper Density (e.g. sums to 1.0) - TODO could use
-    % LogSumExp here?
-    % fTheta_Y = fTheta_Y ./ trapz(theta, fTheta_Y);
-
-    warning('need to work out weighting here, if use sparse grids could use smolyak weights for integrating?')
-
-
+    if fNormalizeAsProbability
+        fTheta_Y = fTheta_Y ./ sum(fTheta_Y);
+    else
+        fY = sum(fTheta_Y .* integrationWeights); % Basic quadrature rule
+        fTheta_Y = fTheta_Y ./ fY;
+    end
+    
     %% Save Raw Data
     rawData = struct();
     rawData.likelihoodVsTimeAndTheta = likelihoodVsTimeAndTheta;

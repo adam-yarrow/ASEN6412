@@ -1,5 +1,5 @@
 function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,...
-    stochasticParam, stochasticParamGP)
+    stochasticParam, stochasticParamGP, nWorkers)
     %{
         This function runs a MC simulation to estimate the trajectory
         statistics and forward UQ.
@@ -35,12 +35,11 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         fGP = true;
     end
     
-    t0 = tic;
-    wb = progressBar(1, Nmc, t0, [], 'MC Runs');
     simDataStorage = cell(Nmc, 1);
     Ygp = NaN(dGP, Nmc);
 
-    for iMC = 1:Nmc
+    WaitMessage = parfor_wait(Nmc, 'Waitbar', true);
+    parfor (iMC = 1:Nmc, nWorkers)
         % Overwrite perturbations - static variables
         constTemp = updateStruct(const, pathsToPerturb, stochasticValues{iMC});
 
@@ -59,8 +58,10 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         alphaStorage(:,iMC) = calcAlpha(simData.x);
     
         % Progress bar
-        wb = progressBar(iMC, Nmc, t0, wb);
+        WaitMessage.Send;
     end
+
+    WaitMessage.Destroy
     
     % Calculate Statistics
     % [xStats, alphaStats] = CalculateMC_Statistics(xStorage, alphaStorage);

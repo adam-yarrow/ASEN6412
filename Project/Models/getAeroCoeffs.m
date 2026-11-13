@@ -11,6 +11,11 @@ function [CL,CD,CM,CMq] = getAeroCoeffs(alpha,deltaE,const, t, x)
         CM_alpha = c.CM_alpha;
     end
 
+    % Linear model in alpha
+    if c.movMeanCM_alpha.fActive
+        CM_alpha = CM_alpha + c.movMeanCM_alpha.deriv * t;   
+    end
+
     % Standard Static Coefficients vs Time
     CL = c.CL_alpha*alpha + c.CL_deltaE*deltaE + c.CL_0;
 

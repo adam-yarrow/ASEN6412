@@ -24,7 +24,7 @@ function [xStats, alphaStats] = CalculateMC_StatisticsFast(xStorage, alphaStorag
     diagIdx = 1:(nStates + 1):nStates^2;   % linear indices of the diagonal
 
     t0 = tic;
-    wb = progressBar(1, nAbsisscas, t0, [], 'MC Statistics Processing');
+    wb = progressBar(1, nMC, t0, [], 'MC Statistics Processing');
 
     for i = 1:nMC
         % ---- states: update running mean and scatter matrix ----
