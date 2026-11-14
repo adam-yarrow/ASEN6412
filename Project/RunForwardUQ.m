@@ -42,10 +42,10 @@ nSamplesPerBin = 100; % For plotting interactive histograms
 levelSCC = 7; % Level for smolyak sparse grid
 
 % Plotting
-fPlotSimData = false;
+fPlotSimData = false; % Enables/disables plotting of all trajectories from SC or MC methods
 
 % Parallelising
-nWokers = 6;
+nWorkers = 6;
 
 
 %% Baseline MC Method

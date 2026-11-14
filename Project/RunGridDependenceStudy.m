@@ -1,6 +1,11 @@
 %{
-    TODO - run different dT and show getting good accuracy 
-     just running baseline case
+    This script runs a mesh dependence study on my ODE solver to determine
+    what relative error tolerance is required for an adequatly converged
+    solution.
+
+    Kind of a farce as by specifying a relative error tolerance that
+    implicity fixes the precision, but this just demonstrates the impact
+    the tolerance has on all of the states.
 %}
 
 Startup();
