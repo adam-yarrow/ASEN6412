@@ -63,19 +63,20 @@ JvsPoly = NaN(nTestPoly,1);
 CmAlphaVsPoly = NaN(nTimes, nTestPoly);
 MSE_VsPoly = NaN(nTestPoly,1);
 runTimes = NaN(nTestPoly,1);
+nlsDetails = cell(nTestPoly,1);
 
 % WaitMessage = parfor_wait(nTestPoly, 'Waitbar', true); % I was using
 % par-for here but it broke a bit with a nested parfor inside goldensearch
 for iOrder = 1:nTestPoly
     tic;
     nTerms = polyOrder(iOrder) + 1;
-    [thetaVsPoly{iOrder}, PVsPoly{iOrder}, nlsDetails] = ...
+    [thetaVsPoly{iOrder}, PVsPoly{iOrder}, nlsDetails{iOrder}] = ...
                 GoldenSearchNLS(CmAlphaMin, CmAlphaMax, maxItsGoldenSearch,...
                     theta0RelTolGoldenSearch, ...
                     nTerms, mode_estimator, covInflationSF, yMeas, ...
-                    controller, false);
+                    controller, true);
 
-    JvsPoly(iOrder) = nlsDetails.Jnls(end);
+    JvsPoly(iOrder) = nlsDetails{iOrder}.Jnls(end);
 
     tMatrix = BuildCmAlphaSensitivityMatrix(t, nTerms);
     CmAlphaVsPoly(:,iOrder) = tMatrix * thetaVsPoly{iOrder};
