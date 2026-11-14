@@ -28,18 +28,18 @@ function [theta, P, nlsDetails] = GoldenSearchNLS(b, a, maxIts, thetaRelTol, nTe
         end
 
         % Run NLS
-        [~, ~, nlsDetails_C] = ...
-                    RunNLS(mode_estimator, getTheta(c,nTerms), ...
-                        covInflationSF, yMeas, controller, false);
-
-        [~, ~, nlsDetails_D] = ...
-                    RunNLS(mode_estimator, getTheta(d,nTerms), ...
-                        covInflationSF, yMeas, controller,false);
-
-        fC = nlsDetails_C.Jnls(end);
-        fD = nlsDetails_D.Jnls(end);
-
-
+        f = NaN(2,1);
+        inputVar = [c,d];
+        parfor (i = 1:2, 2)
+            [~, ~, nlsDetails] = ...
+                        RunNLS(mode_estimator, getTheta(inputVar(i),nTerms), ...
+                            covInflationSF, yMeas, controller, false);
+            
+            f(i) = nlsDetails.Jnls(end);
+        end
+        
+        fC = f(1);
+        fD = f(2);
         if fC < fD
             b = d;
         else

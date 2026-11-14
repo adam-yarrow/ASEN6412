@@ -6,7 +6,7 @@ function [theta_NLS, P_NLS, nlsDetails] = RunNLS(mode_estimator, theta0, ...
     end
     % Options Struct for NLS Solver
     nlsOptions = struct();
-    nlsOptions.maxIterations = 20;
+    nlsOptions.maxIterations = 15;
     nlsOptions.JnlsRelTol =  1E-12;
     nlsOptions.x0Tol = 1E-8;
     nlsOptions.maxAlphaIterations = 50;
