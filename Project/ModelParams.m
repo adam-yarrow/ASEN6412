@@ -124,7 +124,7 @@ function [const] = ModelParams(varargin)
 
     %% NLS Options
     nlsOptions = struct();
-    nlsOptions.maxIterations = 15;
+    nlsOptions.maxIterations = 20;
     nlsOptions.JnlsRelTol =  1E-12;
     nlsOptions.x0Tol = 1E-8;
     nlsOptions.maxAlphaIterations = 50;

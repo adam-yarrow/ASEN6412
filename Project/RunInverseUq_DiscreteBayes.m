@@ -14,7 +14,7 @@ rng(11112026,'twister');
 
 %% Generate Trajectory Instance
 % Real Traj Options
-mode_reality = 'Cmalpha-GP-staticMean'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
+mode_reality = 'linear-cmAlpha'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
 
 % Running Model
 [yMeas, t, nTimes, CM_alphaTrue, constReality, controller] = ...
@@ -43,17 +43,17 @@ nWorkers = 8;
 
 
 %% Direct Bayes Approach - Cm_Alpha and D/Dt Cm_alpha (linear model)
-CmalphaMin = 1.1*constReality.aero.CM_alpha;
-CmalphaMax = 0.9*constReality.aero.CM_alpha;
+CmalphaMin = 1.05*constReality.aero.CM_alpha;
+CmalphaMax = 0.95*constReality.aero.CM_alpha;
 
 % Variables of interest
-nCmalpha = 50;
+nCmalpha = 100;
 rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
 dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
-derivCmAlphaMin = 0; % assume you know thermal loading bends you in one direction
-derivCmAlphaMax = -constReality.aero.CM_alpha*0.4/10; % max of +4% per second
-nDeriv = 50;
+derivCmAlphaMin = -constReality.aero.CM_alpha*0.1/10; %0; % assume you know thermal loading bends you in one direction
+derivCmAlphaMax = -constReality.aero.CM_alpha*0.3/10; %-constReality.aero.CM_alpha*0.4/10; % max of +4% per second
+nDeriv = 100;
 
 rawDeriv = linspace(derivCmAlphaMin, derivCmAlphaMax, nDeriv);
 dDeriv = rawDeriv(2) - rawDeriv(1);
@@ -74,15 +74,29 @@ integrationWeights = integrationWeights(:);
 fPrior = ones(nDeriv, nCmalpha) * 1/((derivCmAlphaMax - derivCmAlphaMin)*(CmalphaMax - CmalphaMin));
 fPrior = fPrior(:);
 
-nWorkers = 6;
+nWorkers = 10;
 [fTheta_Y_2D, stats_2D, rawData_2D] = LinearCmAlphaEstimation(yMeas, ...
                                  rawTheta, 'linear-cmAlpha', mode_reality, ...
                                 covInflationSF, fPlot, controller, nWorkers,...
                                 integrationWeights, fPrior, thetaPaths);
 
+%{
+ TODO - could look at malhalanobis distance between true point and
+ estimate.
+
+Could also look at 2D KS test for how close the distributions match or KL
+divergence?
+%}
 %% TODO - could do p-test for each different case to see which is the most likely?
 
-
+Dkl = 0;
+for i = 1:numel(fTheta_Y_2D)
+    P = CmPdfEst(i);
+    Q = fTheta_Y_2D(i);
+    if P ~= 0 && Q ~= 0
+        Dkl = Dkl +  P* log(Q/P);
+    end
+end
 
 
 %% NLS Approach Test
