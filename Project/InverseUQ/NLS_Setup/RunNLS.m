@@ -4,16 +4,8 @@ function [theta_NLS, P_NLS, nlsDetails] = RunNLS(mode_estimator, theta0, ...
     if nargin < 6
         fPrintUpdates = true;
     end
-    % Options Struct for NLS Solver
-    nlsOptions = struct();
-    nlsOptions.maxIterations = 15;
-    nlsOptions.JnlsRelTol =  1E-12;
-    nlsOptions.x0Tol = 1E-8;
-    nlsOptions.maxAlphaIterations = 50;
-    nlsOptions.alphaRelTol = 1E-4; % Relative change between estimates of optimal alpha that triggers convergence
-    nlsOptions.minAlpha = 1E-10;
-    nlsOptions.fAlphaGoldenSearch = true;
-    nlsOptions.alphaSF = 0.5;
+    % Pull out options
+    nlsOptions = ModelParams('nlsOptions');
     
     % Setup Solver Inputs
     constEstimator = BuildInverseUQParams(mode_estimator,covInflationSF);

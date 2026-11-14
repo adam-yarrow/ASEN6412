@@ -114,14 +114,26 @@ function [const] = ModelParams(varargin)
     const.aero.GP.dataKLE = [];
     const.aero.GP.Y = [];
 
-    %% Moving Mean CM_Alpha
+    %% Moving Mean CM_Alpha: FIXME: I hate this, i should replace with polynomial approach
     const.aero.movMeanCM_alpha.fActive = false; % NOTE: can't be active with a moving mean present in GP
     const.aero.movMeanCM_alpha.deriv = 0.0639/2; % /rad/s  1.5% destabilizing change in CM_alpha per second
     
-
     %% Polynomial CM_Alpha
     const.aero.polyCM_alpha.fActive = false;
     const.aero.polyCM_alpha.coeff = [];
+
+    %% NLS Options
+    nlsOptions = struct();
+    nlsOptions.maxIterations = 15;
+    nlsOptions.JnlsRelTol =  1E-12;
+    nlsOptions.x0Tol = 1E-8;
+    nlsOptions.maxAlphaIterations = 50;
+    nlsOptions.alphaRelTol = 1E-4; % Relative change between estimates of optimal alpha that triggers convergence
+    nlsOptions.minAlpha = 1E-10;
+    nlsOptions.fAlphaGoldenSearch = true;
+    nlsOptions.alphaSF = 0.5;
+
+    const.nlsOptions = nlsOptions;
 
      %% Pull out specific parameter if required
     nArgs = length(varargin);

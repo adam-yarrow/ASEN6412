@@ -2,31 +2,23 @@
     This script runs the inverse UQ problem to estimate what the actual
     value of our Cm_alpha is, given a single noisy trajectory.
 
+    Focuses on using Bayesian estimation to extract constant and linear
+    CM_alpha models.
     
 %}
+Startup();
+
 %% Configuration
 % Fix rng
 rng(11112026,'twister');
 
-Startup();
-
-% Model Baseline
-controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t));
-
-
 %% Generate Trajectory Instance
-% Real Simulation
+% Real Traj Options
 mode_reality = 'Cmalpha-GP-staticMean'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
-constReality = BuildInverseUQParams(mode_reality);
 
-[simData] = Simulation(controller, constReality);
-yMeas = getMeasurements(constReality, simData.x);
-
-simDataNoisy = simData;
-simDataNoisy.x = yMeas;
-
-% Plot truth and measurements
-plotSimulationResults({simData, simDataNoisy},{'Truth Trajectory','Measurements'});
+% Running Model
+[yMeas, t, nTimes, CM_alphaTrue, constReality, controller] = ...
+    SetupInverseUQ(mode_reality);
 
 %% Direct Bayes Approach - Estimating Cm_alpha Only
 %{
@@ -90,10 +82,11 @@ nWorkers = 6;
 
 %% TODO - could do p-test for each different case to see which is the most likely?
 
-%% TODO - Cm_alpha and d/dt of Cmalpha grid
+
 
 
 %% NLS Approach Test
+error('Decide if i want to keep this or delete?')
 covInflationSF = 1;
 theta0 = [-1; 0; 0;  0]; % 3rd order poly
 mode_estimator = 'poly-cmAlpha';
@@ -123,70 +116,4 @@ if strcmpi(mode_reality,'Cmalpha-GP-staticMean')
     plot(t, tMatrix* theta_NLS);
     legend('True GP','Polynomial NLS Fit');
 end
-
-
-%% NLS IC Sensitivity
-theta0_ConstRange = linspace(-1.5,-2.5, 10);
-nTerms = 5;
-polyOrder = nTerms - 1;
-nIC = numel(theta0_ConstRange);
-
-thetaEstStorage = NaN(nTerms, nIC);
-PestStorage = NaN(nTerms, nTerms, nIC);
-JnlsStorage = NaN(nIC);
-
-mode_estimator = 'poly-cmAlpha';
-WaitMessage = parfor_wait(nIC, 'Waitbar', true);
-parfor (iThetaIC = 1:nIC, nWorkers)
-    theta0 = [theta0_ConstRange(iThetaIC); zeros(nTerms-1,1)];
-    [thetaEstStorage(:,iThetaIC), PestStorage(:,:,iThetaIC), nlsDetails] = ...
-                    RunNLS(mode_estimator, theta0, ...
-                        covInflationSF, yMeas, controller);
-
-    JnlsStorage(iThetaIC) = nlsDetails.Jnls(end);
-
-    WaitMessage.Send;
-end
-
-WaitMessage.Destroy
-
-figure();
-plot(theta0_ConstRange, JnlsStorage);
-grid on;
-xlabel('CM_alpha Constant Param IC');
-ylabel('Jnls');
-title('Sensitivity of Jnls to IC');
-
-% Plot diff realisations
-t = simData.times';
-tMatrix = BuildCmAlphaSensitivityMatrix(t, nTerms);
-
-CM_alphaTrue = ReconstructCM_AlphaGP(constReality.aero.GP.Y, t, constReality.aero.GP.dataKLE);
-hold on;
-displayNames = cell(nIC + 1, 1);
-displayNames{1} = 'True GP';
-MSE_NLS_IC = NaN(nIC,1);
-for i = 1:nIC
-    CmAlpha_NLS = tMatrix * thetaEstStorage(:,i);
-    MSE_NLS_IC(i) = sum((CmAlpha_NLS - CM_alphaTrue).^2);
-    plot(t, CmAlpha_NLS,'--');
-    displayNames{i+1} = sprintf('IC = %3.3f',theta0_ConstRange(i));
-end
-legend(displayNames);
-
-% MSE vs IC
-figure();
-plot(theta0_ConstRange', MSE_NLS_IC);
-grid on;
-xlabel('CM_alpha Constant Param IC');
-ylabel('MSE in CM_{\alpha}');
-title('NLS MSE vs NLS IC');
-
-%-1.94 with J = 0.452
-%% Bisection approach
-maxIts = 10;
-theta0RelTol = 1E-2;
-[theta, P, nlsDetails] = GoldenSearchNLS(-1.5, -2.5, maxIts, theta0RelTol, ...
-                    nTerms, mode_estimator, covInflationSF, yMeas, ...
-                    controller, true);
 
