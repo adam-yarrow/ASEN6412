@@ -83,7 +83,7 @@ ylabel('Cm_{\alpha}');
 title('Cm_{\alpha} vs Time for Different Initial Conditions');
 
 % MSE vs IC
-figure();
+figure('Name','MSE in CM_Alpha vs NLS Initial Guess Value');
 plot(theta0_ConstRange', MSE_NLS_IC);
 grid on;
 xlabel('CM_alpha Zeroth Order Parameter Initial Guess');
