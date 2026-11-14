@@ -50,7 +50,7 @@ mode_estimator = 'poly-cmAlpha'; % Essentially fixed
 covInflationSF = 1; %NOTE: Unused
 
 % Poly order
-polyOrder = [3]; %,4,5]; % checking order 0 and order 1 is easier (and more 
+polyOrder = [3,4,5]; % checking order 0 and order 1 is easier (and more 
 % reliable) with discrete bayes filter, so skipping
 
 %% Find Best Polynomial Order Model
@@ -111,7 +111,7 @@ figure('Name','Inverse UQ - CM_alpha vs Time for different Polys')
 hold on;
 plot(t, CM_alphaTrue,'k');
 dispNames = cell(nTestPoly+1,1);
-dispNames{1} = 'True C_M_{\alpha| - GP';
+dispNames{1} = 'True C_M_{\alpha} - GP';
 for i = 1:nTestPoly
     plot(t, CmAlphaVsPoly(:,i),'--');
     dispNames{i+1} = sprintf('NLS - Polynomial Order = %i', polyOrder(i));

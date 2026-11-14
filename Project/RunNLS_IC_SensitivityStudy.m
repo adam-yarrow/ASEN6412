@@ -3,7 +3,6 @@
     CM_alpha coefficients.
 %}
 
-% TODO - finish testing this new script
 
 Startup();
 %% Configuration
@@ -26,7 +25,7 @@ CmAlphaMax = -1.5; % upper bound on search
 nNLS_IC = 10;
 
 % Estimator Settings
-polyOrder = 2;
+polyOrder = 1;
 mode_estimator = 'poly-cmAlpha';
 
 % Par-For
@@ -40,6 +39,7 @@ thetaEstStorage = NaN(nTerms, nNLS_IC);
 PestStorage = NaN(nTerms, nTerms, nNLS_IC);
 JnlsStorage = NaN(nNLS_IC);
 
+tic;
 WaitMessage = parfor_wait(nNLS_IC, 'Waitbar', true);
 parfor (iThetaIC = 1:nNLS_IC, nWorkers)
     theta0 = [theta0_ConstRange(iThetaIC); zeros(nTerms-1,1)];
@@ -51,6 +51,7 @@ parfor (iThetaIC = 1:nNLS_IC, nWorkers)
     WaitMessage.Send;
 end
 WaitMessage.Destroy
+runTime = toc;
 
 %% Plotting
 figure('Name','Sensitivity of Jnls to IC');
@@ -76,6 +77,10 @@ for i = 1:nNLS_IC
     displayNames{i+1} = sprintf('IC = %3.3f',theta0_ConstRange(i));
 end
 legend(displayNames);
+grid on;
+xlabel('Time (s)');
+ylabel('Cm_{\alpha}');
+title('Cm_{\alpha} vs Time for Different Initial Conditions');
 
 % MSE vs IC
 figure();
