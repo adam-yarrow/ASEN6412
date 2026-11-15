@@ -83,4 +83,5 @@ for iState = 1:const.nStates
     xlabel('Time (s)');
     ylabel(const.stateNames{iState});
 end
+legend();
 sgtitle('PCE SOBOL Indices vs Time For Each State');

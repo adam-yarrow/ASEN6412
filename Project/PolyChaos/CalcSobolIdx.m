@@ -24,7 +24,7 @@ function [tau] = CalcSobolIdx(Cmatrix, pceData, d)
     for k = 1:d
         % Sum over Ci^2 for any cases where i_k > 0
         basisIdxForSum = jk(:,k) > 0;
-        varContribYk = sum(Cmatrix(basisIdxForSum).^2,1);
+        varContribYk = sum(Cmatrix(basisIdxForSum, :, :).^2,1);
         tau(k,:,:) = varContribYk ./ totalVar;        
     end   
     

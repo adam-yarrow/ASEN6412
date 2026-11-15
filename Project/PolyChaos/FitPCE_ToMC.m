@@ -50,7 +50,7 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
 
         % Append Var Name
         for iGP = 1:size(yNormGP, 1)
-            variableNames{end+1} = sprintf('Cm_alpha GP - Y_{%i}', iGP);
+            variableNames{end+1} = sprintf('Cm_{\alpha} GP - Y_{%i}', iGP);
         end
     end
     
