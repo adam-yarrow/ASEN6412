@@ -27,8 +27,8 @@ nSamplesPerBin = 100; % For plotting interactive histograms
 % PCE Parameters
 maxTotalOrderPCE = 5; % (p)
 
-% Random Variables Option
-inputVarianceMode = 'static-Cmalpha-wIC'; % 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
+% Random Variables Options: 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean'
+inputVarianceMode = 'Cmalpha-GP-staticMean'; 
 
 % Plotting
 fPlotSimData = false; % Enables/disables plotting of all trajectories from MC
@@ -39,8 +39,8 @@ fPlotSimData = false; % Enables/disables plotting of all trajectories from MC
 dInputs = numel(stochasticParam);
 
 if fGP
-    [d, dataKLE] = GetTruncatedKLE(stochasticParamGP);
-    dInputs = dInputs + d;
+    [dKLE, dataKLE] = GetTruncatedKLE(stochasticParamGP);
+    dInputs = dInputs + dKLE;
     stochasticParamGP.dataKLE = dataKLE;
 end
 
@@ -50,9 +50,6 @@ end
 
 %% MC Plotting
 % Convergence Plotting
-plotStateMoments(const, times, xStats_MC, alphaStats_MC, 'MC');
-
-% Plotting State Stats vs Time
 plotStateMoments(const, times, xStats_MC, alphaStats_MC, 'MC');
 
 % Plotting State Convergence At End time
@@ -68,8 +65,22 @@ end
 plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 
 %% PCE Approximation
-[Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, maxTotalOrderPCE, times, fGP, d, ...
+[Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, maxTotalOrderPCE, times, fGP, dInputs, ...
                         stochasticParam, stochasticParamGP, const);
 
-
 %% SOBOL Indices Generations
+[tau] = CalcSobolIdx(Cmatrix, pceData, dInputs);
+
+figure('Name','SOBOL Indices');
+for iState = 1:const.nStates
+    subplot(2,3,iState);
+    hold on;
+    for inputK = 1:dInputs
+        plot(times, squeeze(tau(inputK,:,iState)), ...
+            'DisplayName',pceData.variableNames{inputK});
+    end
+    grid on;
+    xlabel('Time (s)');
+    ylabel(const.stateNames{iState});
+end
+sgtitle('PCE SOBOL Indices vs Time For Each State');

@@ -110,7 +110,7 @@ function [stochasticParam, stochasticParamGP, fGP] = ForwardUqPerturbationVars(m
 
             % Any static parameters can go here
             % TODO - for SOBOL indices add these parameters in as required
-            stochasticParam = {};
+            stochasticParam = {V, h};
 
             %% TODO - if needed
         % case lower('Cmalpha-GP-linearMean')

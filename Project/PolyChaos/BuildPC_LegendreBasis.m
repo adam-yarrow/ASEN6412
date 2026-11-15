@@ -12,6 +12,7 @@ function [phiVsP] = BuildPC_LegendreBasis(y, validBasisCombos)
         the basis function (up to total order p) evaluated at the y values.
     %}
     [nBasisFunc, d] = size(validBasisCombos);
+    p = max(validBasisCombos,[],'all');
 
     % Pre-Compute univariate basis functions Once
     univariateBasisEvals = NaN(p+1, d);

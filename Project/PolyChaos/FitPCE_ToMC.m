@@ -36,7 +36,8 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
 
     %% Get Input Variables
     % Standard Uniform Variables    
-    [yNorm, ~] = GetNormalizedStdVariables(rawData_MC, stochasticParam);
+    [yNorm, ~, variableNames] = GetNormalizedStdVariables(rawData_MC,...
+                            stochasticParam);
 
     % Handle Gaussian Process Variables
     if fGP
@@ -46,6 +47,11 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
 
         % Make super Y
         yNorm = vertcat(yNorm, yNormGP);
+
+        % Append Var Name
+        for iGP = 1:size(yNormGP, 1)
+            variableNames{end+1} = sprintf('Cm_alpha GP - Y_{%i}', iGP);
+        end
     end
     
     %% Reshape State Matrix
@@ -84,6 +90,7 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
     pceData.xEst = permute(xEst, [3, 2, 1]); % Reshape to standard simData.x format
     pceData.RMSE = RMSE_PCE;
     pceData.basisOrders_jk = validBasisCombos; % This is the order of each univariate poly
+    pceData.variableNames = variableNames;
 
 
 end
@@ -98,10 +105,12 @@ function [yNormGP] = GetNormalizedGPVariables(rawData_MC, stochasticParamGP)
     yNormGP = y / K; % Symmetric so can do this    
 end
 
-function [yNorm, dLocal] = GetNormalizedStdVariables(rawData_MC, stochasticParam)
+function [yNorm, dLocal, varNames] = GetNormalizedStdVariables(rawData_MC, ...
+                                    stochasticParam)
     y = [rawData_MC.rawStochasticValues{:}]'; % d x N (N simulations)
     dLocal = size(y,1); % NOTE: only local cause GP handled separately
-    
+    varNames = cell(dLocal, 1);
+
     % Map y from [a,b]-> [-1,1] for PCE basis
     yNorm = NaN(size(y));
     for iDim = 1:dLocal
@@ -109,5 +118,9 @@ function [yNorm, dLocal] = GetNormalizedStdVariables(rawData_MC, stochasticParam
         a = stochasticParam{iDim}.min;
     
         yNorm(iDim,:) =  2*(y(iDim,:) - (b+a)/2)/(b-a);
+        
+        varNames{iDim} = stochasticParam{iDim}.path;
     end
+
+
 end
