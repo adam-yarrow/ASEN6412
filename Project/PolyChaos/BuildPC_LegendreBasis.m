@@ -14,14 +14,30 @@ function [phiVsP] = BuildPC_LegendreBasis(y, validBasisCombos)
     [nBasisFunc, d] = size(validBasisCombos);
     p = max(validBasisCombos,[],'all');
 
-    % Pre-Compute univariate basis functions Once
+    % Pre-Compute univariate basis functions once using 3 term recurrence
     univariateBasisEvals = NaN(p+1, d);
+    normConstant = NaN(p+1,1);
+    y = y(:)'; % forcing row vector
+
     for k = 0:p
-        %% TODO - might make this universal and provide option to specify poly type here in future
-        %% Would need to fuck with pre-normalization though
-        univariateBasisEvals(k+1,:) = LegendrePoly(y,k);
+        normConstant(k+1) = sqrt((2*k + 1));  % OR is it sqrt((2*k + 1)/2) - this is for no prob density i think?
+        if k == 0
+            univariateBasisEvals(k+1,:) = ones(1,d);
+        elseif k == 1
+            univariateBasisEvals(k+1,:) = y;    
+        else
+            i = k - 1;
+            % phi_i = univariateBasisEvals(i+1,:);
+            % phi_it1 = univariateBasisEvals(i-1 + 1,:);
+            % solving for phi_ip1
+            univariateBasisEvals(k+1,:) = 1/(i+1) * ...
+                    ((2*i + 1)*y .* univariateBasisEvals(i+1,:) ...
+                        - i*univariateBasisEvals(i-1 + 1,:));
+        end
     end
-    
+    % Normalize
+    univariateBasisEvals = univariateBasisEvals .* normConstant;
+
     % Evaluate Basis Functions
     phiVsP = ones(1, nBasisFunc);
     % TODO - determine if i can re-use anything here?? OR how to avoid

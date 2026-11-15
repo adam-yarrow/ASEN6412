@@ -26,6 +26,7 @@ nSamplesPerBin = 100; % For plotting interactive histograms
 
 % PCE Parameters
 maxTotalOrderPCE = 5; % (p)
+nWorkers = 0; % normally 6
 
 % Random Variables Options: 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean'
 inputVarianceMode = 'Cmalpha-GP-staticMean'; 
@@ -66,7 +67,10 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 
 %% PCE Approximation
 [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, maxTotalOrderPCE, times, fGP, dInputs, ...
-                        stochasticParam, stochasticParamGP, const);
+                        stochasticParam, stochasticParamGP, const, nWorkers);
+
+RMSE_Mean = mean(pceData.RMSE, 2);
+RMSE_Sigma = var(pceData.RMSE, 0, 2).^0.5;
 
 %% SOBOL Indices Generations
 [tau] = CalcSobolIdx(Cmatrix, pceData, dInputs);

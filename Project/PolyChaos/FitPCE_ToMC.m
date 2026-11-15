@@ -1,5 +1,5 @@
 function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
-                        stochasticParam, stochasticParamGP, const)
+                        stochasticParam, stochasticParamGP, const, nWorkers)
     %{
         Fits a PCE to MC results.
         Solves a LSQ problem to fit psiMatrix*Cmatrix = x
@@ -17,6 +17,7 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
             stochasticParam = struct with stochastic input parameters
             stochasticParamGP = struct with GP parameters for CM_alpha
             const = model params struct
+            nWorkers = number of parfor workers
 
     %}
 
@@ -59,10 +60,20 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
     xMatrix = permute(rawData_MC.x, [3,2,1]);
 
     %% Build psiMatrix once for all states
+    %{ 
+        This is very expensive to call BuildPC_LegendreBasis due to call to
+        LegendrePoly(). Could maybe improve this, for now parfor this
+        motherfucker. Definitely could pass this in as a full size y
+        vector.
+    %}
     [validBasisCombos] = GetValidPC_BasisOptions(d,p);
-    for iMC = 1:N
+    
+    WaitMessage = parfor_wait(N, 'Waitbar', true);
+    parfor (iMC = 1:N, nWorkers)
         psiMatrix(iMC,:) = BuildPC_LegendreBasis(yNorm(:,iMC), validBasisCombos);
+        WaitMessage.Send;
     end
+    WaitMessage.Destroy
     
     %% Solve System for each state across all times
     for iState = 1:nStates
