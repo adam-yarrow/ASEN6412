@@ -72,6 +72,8 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 RMSE_Mean = mean(pceData.RMSE, 2);
 RMSE_Sigma = var(pceData.RMSE, 0, 2).^0.5;
 
+%% TODO - maybe compare PCE mean and variance estimates with MC response?
+
 %% SOBOL Indices Generations
 [tau] = CalcSobolIdx(Cmatrix, pceData, dInputs);
 
