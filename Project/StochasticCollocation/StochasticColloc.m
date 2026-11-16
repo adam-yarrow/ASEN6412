@@ -10,7 +10,7 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
 
         Inputs:
             const = baseline parameter set
-            Z = d x N number of points to evaluate at
+            Z = d x N points to evaluate at (Z = [-1,1])
             W = N x 1 weights for each point
             controller = annonymous function representing the controller
             stochasticParam = cell array of structs defining how to perturb the
@@ -58,18 +58,15 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
         dGP = stochasticParamGP.dataKLE.d;
         fGP = true;
 
-        % Map Zi = [-1,1] to Ygp_i ~ N(0,1), truncated to +/-K*sigma,
-        % sigma = 1
+        % Map Zi = [-1,1] to Ygp_i ~ [-K,k]
         Ygp = stochasticParamGP.YtruncSigma * Z(:,1:dGP); 
 
         % Adjust weights based on truncated KLE - same process as truncated
         % gaussian
         Wgp = NaN(nAbsisscas, dGP);        
         for iDim = 1:dGP
-            Wgp(:,iDim) = stochasticParamGP.YtruncSigma * ...
-                            truncNormalPdf(Ygp(:,iDim), 0, 1, ...
-                            stochasticParamGP.YtruncSigma);
-            
+            % Weights assume uniform random variable inputs
+            Wgp(:,iDim) = 1/2* ones(size(Ygp(:,iDim)));            
         end
 
         % Overite old W with new GP corrected W scaled by all dimensions

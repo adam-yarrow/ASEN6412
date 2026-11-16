@@ -32,8 +32,7 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
                 rawParams{iParam} = paramMean + paramGradient .* Y(:, iParam);
 
                 % Get Weights
-                warning('CHECK IF THIS CONSTANT 1/2 is correct?');
-                pdfWeightings(:, iParam) = ones(nPoints,1) * 1/2; % Constant 1/2 factor???
+                pdfWeightings(:, iParam) = ones(nPoints,1) * 1/2; 
 
             case 'gaussian'
                 error('Not sure if this will work with just gaussian');

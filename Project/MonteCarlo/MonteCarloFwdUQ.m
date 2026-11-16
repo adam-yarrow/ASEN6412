@@ -43,10 +43,11 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
         % Overwrite perturbations - static variables
         constTemp = updateStruct(const, pathsToPerturb, stochasticValues{iMC});
 
-        % Setup Gaussian process random variables
+        % Setup Gaussian process random variables. Assuming underlying
+        % uniform distribution for Ygp = [-Ktrunc, Ktrunc]
         if fGP
             Ktrunc = stochasticParamGP.YtruncSigma;
-            Ygp(:,iMC) = trandn(-Ktrunc*ones(dGP,1), Ktrunc*ones(dGP,1));
+            Ygp(:,iMC) = Ktrunc*rand(dGP,1)
             constTemp.aero.GP.Y = Ygp(:,iMC) ;
         end
 

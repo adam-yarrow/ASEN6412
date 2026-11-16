@@ -108,7 +108,6 @@ end
 
 %% helper functions
 function [yNormGP] = GetNormalizedGPVariables(rawData_MC, stochasticParamGP)
-    warning('this will probably need to change if i switch to uniform RV inputs');
     y = rawData_MC.rawY_GP; % dGP x N
 
     % Map y from [-K, K] -> [-1, 1] (from truncated gaussian process)

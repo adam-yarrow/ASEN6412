@@ -39,9 +39,6 @@ function const = buildBaselineGPparam(const, covInflationSF)
     % Update const struct
     const.aero.GP.fActive = true;
     const.aero.GP.dataKLE = dataKLE;
-   
-    warning('might change this to uniform random vars in future?');
     Ktrunc = stochasticParamGP.YtruncSigma;
-    Y = trandn(-Ktrunc*ones(d,1), Ktrunc*ones(d,1));
-    const.aero.GP.Y = Y;
+    const.aero.GP.Y = Ktrunc*rand(d,1);
 end
