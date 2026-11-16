@@ -18,8 +18,8 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
 
     nParams = numel(stochasticParam);
     nPoints = numel(W);
-    rawParams = cell(nParams,1); %% TODO - might not need to be a cell array if working exclusively with numbers?
-    
+    rawParams = cell(nParams,1);
+
     pdfWeightings = NaN(nPoints, nParams);
 
     for iParam = 1:nParams
@@ -33,9 +33,6 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
 
                 % Get Weights
                 pdfWeightings(:, iParam) = ones(nPoints,1) * 1/2; 
-
-            case 'gaussian'
-                error('Not sure if this will work with just gaussian');
 
             case 'trunc-gaussian'
                 % Reference
