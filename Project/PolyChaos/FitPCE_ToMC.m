@@ -77,7 +77,7 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
     
     %% Solve System for each state across all times
     for iState = 1:nStates
-        Cmatrix(:,:,iState) = psiMatrix \ xMatrix(:,:,iState);
+        Cmatrix(:,:,iState) = pinv(psiMatrix) * xMatrix(:,:,iState);
         
         % Estimated value and RMSE calculation
         xEst(:,:,iState) =  psiMatrix*Cmatrix(:,:,iState);
