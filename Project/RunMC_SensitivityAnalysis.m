@@ -25,7 +25,7 @@ Nmc = 2500;
 nSamplesPerBin = 100; % For plotting interactive histograms
 
 % PCE Parameters
-maxTotalOrderPCE = 5; % (p)
+maxTotalOrderPCE = 10; % (p)
 nWorkers = 0; % normally 6
 
 % Random Variables Options: 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean'
@@ -72,7 +72,19 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 RMSE_Mean = mean(pceData.RMSE, 2);
 RMSE_Sigma = var(pceData.RMSE, 0, 2).^0.5;
 
+figure('Name','Ci vs Index for End Time of Each State');
+for iState = 1:5
+    subplot(2,3,iState)
+    semilogy(abs(Cmatrix(:,end,iState)),'o');
+    grid on;
+    xlabel('Index')
+    ylabel('|c_i|');
+    title(const.stateNames{iState});
+end
+
 %% TODO - maybe compare PCE mean and variance estimates with MC response?
+%% TODO - try different levels of approximation and see what the response is like in terms of SOBOL and MSE
+%% TODO - generate larger MC samples proportional to higher order terms
 
 %% SOBOL Indices Generations
 [tau] = CalcSobolIdx(Cmatrix, pceData, dInputs);
@@ -91,3 +103,4 @@ for iState = 1:const.nStates
 end
 legend();
 sgtitle('PCE SOBOL Indices vs Time For Each State');
+
