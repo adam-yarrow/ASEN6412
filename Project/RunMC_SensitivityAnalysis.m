@@ -21,11 +21,11 @@ controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t
 times = 0:const.dT:const.tEnd;
 
 % MC Params
-Nmc = 2500; 
+Nmc = 20000; 
 nSamplesPerBin = 100; % For plotting interactive histograms
 
 % PCE Parameters
-maxTotalOrderPCE = 10; % (p)
+maxTotalOrderPCE = 7; % (p)
 nWorkers = 0; % normally 6
 
 % Random Variables Options: 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean'
