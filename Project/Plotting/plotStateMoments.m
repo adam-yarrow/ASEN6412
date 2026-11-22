@@ -11,11 +11,11 @@ function plotStateMoments(const, times, xStats, alphaStats, dataSrc)
         plot(times(2:end), stateSF*(squeeze(xStats.mean(iState,2:end,end)) - sigma'),'r--','DisplayName','\mu - 1\sigma');
         plot(times(2:end), stateSF*(squeeze(xStats.mean(iState,2:end,end)) + sigma'),'b--','DisplayName','\mu + 1\sigma');
         
-        legend();
+        % legend();
         xlabel('Time (s)');
         ylabel(sprintf('%s (%s)', const.stateNames{iState}, const.statePlottingUnits{iState}));
         grid on;  
-        legend();
+        % legend();
         ax = gca;
         ax.LineWidth = 2;  % Thicker axes
         ax.FontSize = 12;

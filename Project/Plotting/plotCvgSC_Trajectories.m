@@ -90,7 +90,7 @@ function plotState(statsArray, times, dataName, stateIdx, simNames, ...
         end
     end
     grid on;  
-    legend();
+    % legend();
     ax = gca;
     ax.LineWidth = 2;  % Thicker axes
     ax.FontSize = 12;

@@ -25,7 +25,7 @@ function plotConvergenceOfStateMoments(const, tToPlotIdx, xStats, alphaStats, nM
         ax = gca;
         ax.LineWidth = 2;  % Thicker axes
         ax.FontSize = 12;
-        legend();
+        % legend();
     end
     
     % Alpha
