@@ -74,6 +74,6 @@ function [xStats, alphaStats, rawData] = MonteCarloFwdUQ(const,Nmc,controller,..
     rawData.u = uStorage;
     rawData.alpha = alphaStorage;
     rawData.rawStochasticValues = rawStochasticValues;
-    rawData.rawY_GP = Ygp;
+    rawData.Ygp = Ygp;
     rawData.simData = simDataStorage;
 end
