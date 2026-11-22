@@ -88,11 +88,34 @@ for iOrder = 1:nTestPoly
 end
 % WaitMessage.Destroy;
 
+%% Trying to append to existing results
+polyOrderAppend = [7,8];
+for iOrder = 1:numel(polyOrderAppend)
+    nTerms = polyOrderAppend(iOrder) + 1;
+    tic
+    currentIdx = nTestPoly + iOrder;
+    [thetaVsPoly{end+1}, PVsPoly{end+1}, nlsDetails{end+1}] = ...
+                GoldenSearchNLS(CmAlphaMin, CmAlphaMax, maxItsGoldenSearch,...
+                    theta0RelTolGoldenSearch, ...
+                    nTerms, mode_estimator, covInflationSF, yMeas, ...
+                    controller, true);
 
+    JvsPoly(end+1) = nlsDetails{currentIdx}.Jnls(end);
+
+    tMatrix = BuildCmAlphaSensitivityMatrix(t, nTerms);
+    CmAlphaVsPoly(:,end+1) = tMatrix * thetaVsPoly{currentIdx};
+    MSE_VsPoly(end+1) = sum((CmAlphaVsPoly(:,currentIdx) - CM_alphaTrue).^2);
+
+    runTimes(end+1) = toc;    
+    
+end
+polyOrder = [polyOrder, polyOrderAppend]
+
+nTestPoly = numel(polyOrder);
 %% Plotting
 % Cost Function
 figure('Name','Inverse UQ - NLS Cost Function vs Polynomial Order');
-plot(polyOrder, JvsPoly);
+semilogy(polyOrder, JvsPoly);
 xlabel('Polynomial Order');
 ylabel('J_{NLS}');
 title('NLS Cost Function Value Vs Polynomial Fit Order for Cm_{\alpha}(t)')
@@ -100,7 +123,7 @@ grid on;
 
 % MSE
 figure('Name','Inverse UQ - MSE vs Polynomial Order');
-plot(polyOrder, MSE_VsPoly);
+semilogy(polyOrder, MSE_VsPoly);
 xlabel('Polynomial Order');
 ylabel('MSE');
 title('MSE To True Cm_{\alpha}(t) Vs Polynomial Fit Order for Cm_{\alpha}(t)')

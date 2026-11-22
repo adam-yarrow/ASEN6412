@@ -40,6 +40,17 @@ nWorkers = 8;
 [fTheta_Y, stats, rawData] = CmAlphaEstimation(yMeas, rawCmAlpha, mode_estimator, mode_reality, ...
                                 covInflationSF, fPlot, controller, nWorkers);
 
+% CDF Differences
+gaussianPDF = normcdf(rawCmAlpha, stats.MMSE, stats.var^0.5);
+rmsePDF = sqrt(sum((fTheta_Y - gaussianPDF).^2));
+% TODO - could do KS test here?
+
+
+% hold on;
+% testCmAlpha = linspace(CmalphaMin, CmalphaMax, 10*nCmalpha);
+% gaussianPDF = normpdf(testCmAlpha, stats.MMSE, stats.var^0.5);
+% plot(testCmAlpha, gaussianPDF);
+% legend('Posterior','Gaussian Approximation of Posterior');
 
 %% Direct Bayes Approach - Cm_Alpha and D/Dt Cm_alpha (linear model)
 CmalphaMin = 1.2*constReality.aero.CM_alpha;
@@ -78,6 +89,11 @@ nWorkers = 10;
                                  rawTheta, 'linear-cmAlpha', mode_reality, ...
                                 covInflationSF, fPlot, controller, nWorkers,...
                                 integrationWeights, fPrior, thetaPaths);
+
+
+%% TODO - 2D testing
+gaussianPDF_2D = mvnpdf(rawTheta, stats_2D.MMSE', stats_2D.var);
+rmsePDF_2D = sqrt(sum((fTheta_Y_2D - gaussianPDF_2D).^2));
 
 %{
  TODO - could look at malhalanobis distance between true point and
