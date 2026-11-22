@@ -39,10 +39,10 @@ Nmc = 2561; % equiv number of points to spquad(3,5)
 nSamplesPerBin = 100; % For plotting interactive histograms
 
 % Stochastic Collocation Params
-levelSCC = 7; % Level for smolyak sparse grid
+levelSCC = 5; % Level for smolyak sparse grid
 
 % Plotting
-fPlotSimData = false; % Enables/disables plotting of all trajectories from SC or MC methods
+fPlotSimData = true; % Enables/disables plotting of all trajectories from SC or MC methods
 
 % Parallelising
 nWorkers = 6;
