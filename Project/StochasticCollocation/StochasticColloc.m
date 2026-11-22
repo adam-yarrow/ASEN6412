@@ -72,10 +72,11 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
         % Overite old W with new GP corrected W scaled by all dimensions
         W = W .* prod(Wgp, 2);
 
-        % Check W is well conditioned (should be close to 1, checking +/- 20%)
-        if abs(sum(W) - 1) > 0.2
-            fprintf('WARNING: GP weights summed to: %f\n',sum(W));   
-        end 
+        % Disabled because full weight product not realized yet
+        % % Check W is well conditioned (should be close to 1, checking +/- 20%)
+        % if abs(sum(W) - 1) > 0.2
+        %     fprintf('WARNING: GP weights summed to: %f\n',sum(W));   
+        % end 
 
         % Remove Z values that were consumed by the dimensions of the
         % gaussian process
@@ -86,6 +87,12 @@ function [xStats, alphaStats, rawData] = StochasticColloc(const, Z, W, ...
     [stochasticValues, rawStochasticValues, Wcorrected] = MapSCCtoDistributions(...
                     stochasticParam, ZnonGP, W);
 
+    % Checking weights are reasonable values given distributions at hand
+    % (Use protection it'll save your Stochastic Collocation from spawning
+    % terrible children.)
+    if abs(sum(Wcorrected) - 1) > 0.2
+        fprintf(' WARNING: Weights summed to: %f\n',sum(Wcorrected));  
+    end  
    
     % Run Stoch Colloc
     t0 = tic;

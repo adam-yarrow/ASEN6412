@@ -54,13 +54,6 @@ function [stochasticValues, rawParams, Wcorrected] = MapSCCtoDistributions(...
     % Now rescale weights by taking product of all of them along the input
     % dimension direction
     Wcorrected = W .* prod(pdfWeightings,2);   
-
-    % Checking weights are reasonable values given distributions at hand
-    % #Use protection it'll save your Stochastic Collocation from spawning
-    % terrible children.
-    if abs(sum(Wcorrected) - 1) > 0.2
-        fprintf(' WARNING: Weights summed to: %f\n',sum(Wcorrected));  
-    end  
    
     % Repackage raw data into cell arrays
     stochasticValues = arrayfun(@(i) cellfun(@(x) x(i), rawParams, 'UniformOutput', false), ...
