@@ -25,13 +25,12 @@ mode_reality = 'linear-cmAlpha'; % Options = 'static-cmAlpha', 'linear-cmAlpha',
     Considers the case of searching for Cm_alpha only, even if model is of
     a higher order
 %}
-CmalphaMin = 1.5*constReality.aero.CM_alpha;
-CmalphaMax = 0.5*constReality.aero.CM_alpha;
+CmalphaMin = -2.15; %1.5*constReality.aero.CM_alpha;
+CmalphaMax = -1.9;%0.5*constReality.aero.CM_alpha;
 
 % Variable of interest
 nCmalpha = 500;
 rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
-dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
 mode_estimator = 'static-cmAlpha'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
 covInflationSF = 0.5; % Used for GP only
@@ -87,47 +86,3 @@ nWorkers = 10;
 Could also look at 2D KS test for how close the distributions match or KL
 divergence?
 %}
-%% TODO - could do p-test for each different case to see which is the most likely?
-
-Dkl = 0;
-for i = 1:numel(fTheta_Y_2D)
-    P = CmPdfEst(i);
-    Q = fTheta_Y_2D(i);
-    if P ~= 0 && Q ~= 0
-        Dkl = Dkl +  P* log(Q/P);
-    end
-end
-
-
-%% NLS Approach Test
-error('Decide if i want to keep this or delete?')
-covInflationSF = 1;
-theta0 = [-1; 0; 0;  0]; % 3rd order poly
-mode_estimator = 'poly-cmAlpha';
-
-[theta_NLS, P_NLS, nlsDetails] = RunNLS(mode_estimator, theta0, covInflationSF, yMeas);
-
-% Only works for linear model
-if strcmpi(mode_reality,'linear-cmAlpha')
-    % Plot Solver outputs
-    thetaTrue = [const.aero.CM_alpha; const.aero.movMeanCM_alpha.deriv];
-    plotNLS(nlsDetails, thetaTrue);
-    
-    % Error In Coeffs Est
-    thetaRelErrorPercent = (theta_NLS - thetaTrue) ./ thetaTrue * 100;
-end
-
-if strcmpi(mode_reality,'Cmalpha-GP-staticMean')
-    ReconstructCM_AlphaGP(constReality.aero.GP.Y, simData.times', constReality.aero.GP.dataKLE);
-    hold on;
-    t = simData.times';
-    nTimes = numel(simData.times); 
-    tMatrix = zeros(nTimes, numel(theta_NLS));
-    for i = 1:numel(theta_NLS)
-        tMatrix(:,i) = t.^(i-1);
-    end
-
-    plot(t, tMatrix* theta_NLS);
-    legend('True GP','Polynomial NLS Fit');
-end
-

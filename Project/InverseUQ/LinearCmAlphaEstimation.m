@@ -38,8 +38,11 @@ function [fTheta_Y, stats, rawData] = LinearCmAlphaEstimation(yMeas, rawTheta, .
     
     % Plotting
     if fPlot
-        figure('Name','Posterior of Cm_Alpha');
-        scatter3(rawTheta(:,1), rawTheta(:,2), fTheta_Y);
+        figure('Name',sprintf('Posterior of Cm_Alpha - Sim Model = %s - Estimator Model = %s',...
+            mode_reality, mode_estimator));
+        fToPlot = fTheta_Y;
+        fToPlot(fTheta_Y < 1E-8) = NaN; % Forcing to not show for ease of visibility
+        scatter3(rawTheta(:,1), rawTheta(:,2), fToPlot,'.');
         grid on;
         xlabel('Cm_{\alpha}');
         ylabel('d/dt(Cm_{\alpha})')

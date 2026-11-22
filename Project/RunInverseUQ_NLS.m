@@ -50,7 +50,7 @@ mode_estimator = 'poly-cmAlpha'; % Essentially fixed
 covInflationSF = 1; %NOTE: Unused
 
 % Poly order
-polyOrder = [3,4,5]; % checking order 0 and order 1 is easier (and more 
+polyOrder = [3,4,5,6]; % checking order 0, 1, 2 is easier (and more 
 % reliable) with discrete bayes filter, so skipping
 
 %% Find Best Polynomial Order Model

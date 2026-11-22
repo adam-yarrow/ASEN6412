@@ -1,7 +1,7 @@
 
 
 % G = gaussian process part of Cmalpha
-
+const = ModelParams();
 
 tMax = 10;
 tMin = 0;
@@ -9,11 +9,11 @@ tMin = 0;
 
 muG = 0;
 targetSigma = 2.1335/10;
-sigmaGxx = targetSigma * 0.75; %/5
+sigmaGxx = targetSigma * 1.0; %/5
 lGxx = tMax*2*0.32;
 
 
-Ktrunc = 1; %3;
+Ktrunc = 3; %3;
 
 t = (tMin:const.dT:tMax)';
 
@@ -66,10 +66,13 @@ grid on;
 nInstances = 1000;
 Y = trandn(-Ktrunc*ones(d*nInstances,1), Ktrunc*ones(d*nInstances,1));
 Y = reshape(Y,d, nInstances);
-gDistrib = getRV_KLE(t, dataKLE, Y);
+gDistrib = NaN(numel(t), nInstances);
+for i = 1:nInstances
+    gDistrib(:,i) = getRV_KLE(t, dataKLE, Y(:,i));
+end
 
- figure();
- hold on;
+figure();
+hold on;
  % cnt = 0
 for i = 1:numel(t)
     if mod(i,50)

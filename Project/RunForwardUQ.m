@@ -21,7 +21,7 @@ controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t
 times = 0:const.dT:const.tEnd;
 
 % Random Inputs
-inputVarianceMode = 'static-Cmalpha-wIC'; %'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
+inputVarianceMode = 'Cmalpha-GP-staticMean'; %'Cmalpha-GP-staticMean' ;%'static-Cmalpha-only';
 [stochasticParam, stochasticParamGP, fGP] = ...
     ForwardUqPerturbationVars(inputVarianceMode, const);
 

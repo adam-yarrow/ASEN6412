@@ -63,7 +63,8 @@ function [fTheta_Y, stats, rawData] = CmAlphaEstimation(yMeas, rawTheta, ...
     
     % Plotting
     if fPlot
-        figure('Name','Posterior of Cm_Alpha');
+        figure('Name',sprintf('Posterior of Cm_Alpha - Sim Model = %s - Estimator Model = %s',...
+            mode_reality, mode_estimator));
         plot(rawTheta, fTheta_Y);
         grid on;
         xlabel('Cm_{\alpha}');
