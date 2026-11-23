@@ -21,12 +21,12 @@ controller =  @(t,x,const) AlphaController(t, x, const, @(t) getReferenceAlpha(t
 times = 0:const.dT:const.tEnd;
 
 % MC Params
-Nmc = 20000; 
+Nmc = 50000; 
 nSamplesPerBin = 100; % For plotting interactive histograms
 
 % PCE Parameters
 maxTotalOrderPCE = 7; % (p)
-nWorkers = 0; % normally 6
+nWorkers = 6; % normally 6
 
 % Random Variables Options: 'static-Cmalpha-wIC', 'Cmalpha-GP-staticMean'
 inputVarianceMode = 'Cmalpha-GP-staticMean'; 
@@ -72,24 +72,25 @@ plotMC_HistogramsInteractive(const, rawData_MC, nSamplesPerBin);
 RMSE_Mean = mean(pceData.RMSE, 2);
 RMSE_Sigma = var(pceData.RMSE, 0, 2).^0.5;
 
-figure('Name','Ci vs Index for End Time of Each State');
+figure('Name',sprintf('Ci vs Index for End Time of Each State - p = %i', maxTotalOrderPCE));
 for iState = 1:5
     subplot(2,3,iState)
-    semilogy(abs(Cmatrix(:,end,iState)),'o');
+    semilogy(abs(Cmatrix(:,end,iState)),'.');
     grid on;
     xlabel('Index')
     ylabel('|c_i|');
     title(const.stateNames{iState});
 end
+sgtitle(sprintf('Ci vs Index for End Time of Each State - p = %i', maxTotalOrderPCE))
 
-%% TODO - maybe compare PCE mean and variance estimates with MC response?
-%% TODO - try different levels of approximation and see what the response is like in terms of SOBOL and MSE
-%% TODO - generate larger MC samples proportional to higher order terms
+% %% TODO - maybe compare PCE mean and variance estimates with MC response?
+% %% TODO - try different levels of approximation and see what the response is like in terms of SOBOL and MSE
+% %% TODO - generate larger MC samples proportional to higher order terms
 
 %% SOBOL Indices Generations
 [tau] = CalcSobolIdx(Cmatrix, pceData, dInputs);
 
-figure('Name','SOBOL Indices');
+figure('Name',sprintf('PCE SOBOL Indices vs Time For Each State - p = %i',maxTotalOrderPCE));
 for iState = 1:const.nStates
     subplot(2,3,iState);
     hold on;
@@ -102,5 +103,5 @@ for iState = 1:const.nStates
     ylabel(const.stateNames{iState});
 end
 legend();
-sgtitle('PCE SOBOL Indices vs Time For Each State');
+sgtitle(sprintf('PCE SOBOL Indices vs Time For Each State - p = %i',maxTotalOrderPCE));
 
