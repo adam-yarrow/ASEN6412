@@ -76,16 +76,17 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
     WaitMessage.Destroy
     
     %% Solve System for each state across all times
+    psiInv = pinv(psiMatrix);
     for iState = 1:nStates
-        Cmatrix(:,:,iState) = pinv(psiMatrix) * xMatrix(:,:,iState);
-        warning('maybe do the pinv over each time bracket separately?')
+        Cmatrix(:,:,iState) = psiInv * xMatrix(:,:,iState);
+        
         % Estimated value and RMSE calculation
         xEst(:,:,iState) =  psiMatrix*Cmatrix(:,:,iState);
         RMSE_PCE(iState,:) = sqrt(sum((xEst(:,:,iState) - xMatrix(:,:,iState)).^2, 2));
     end
     
     %% Plotting - Checking how good the solution is
-    figure('Name','PCE RMSE Histograms');
+    figure('Name',sprintf('PCE RMSE Histograms - p = %i', p));
     for iState = 1:nStates
         subplot(2,3,iState);
         histogram(RMSE_PCE(iState,:)*const.statePlottingSF(iState));
@@ -93,7 +94,7 @@ function [Cmatrix, pceData] = FitPCE_ToMC(rawData_MC, p, times, fGP, d, ...
         xlabel(sprintf('%s (%s)',const.stateNames{iState}, const.statePlottingUnits{iState}))
         ylabel('Counts');
     end
-    sgtitle('PCE RMSE Histograms');
+    sgtitle(sprintf('PCE RMSE Histograms - p = %i', p));
 
     %% Save Relevant Data
     pceData = struct();

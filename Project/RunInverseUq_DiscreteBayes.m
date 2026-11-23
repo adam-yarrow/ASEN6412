@@ -25,28 +25,39 @@ mode_reality = 'linear-cmAlpha'; % Options = 'static-cmAlpha', 'linear-cmAlpha',
     Considers the case of searching for Cm_alpha only, even if model is of
     a higher order
 %}
-CmalphaMin = -2.15; %1.5*constReality.aero.CM_alpha;
-CmalphaMax = -1.9;%0.5*constReality.aero.CM_alpha;
+CmalphaMin = 1.2*constReality.aero.CM_alpha;%-2.15; 
+CmalphaMax = 0.8*constReality.aero.CM_alpha; %-1.9;
 
 % Variable of interest
-nCmalpha = 500;
+nCmalpha = 500; % 500
 rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
 
 mode_estimator = 'static-cmAlpha'; % Options = 'static-cmAlpha', 'linear-cmAlpha', 'Cmalpha-GP-staticMean', 'Cmalpha-GP-movMean'
-covInflationSF = 0.5; % Used for GP only
+covInflationSF = 1.0; % Used for GP only
 fPlot = true;
 nWorkers = 8;
 
 [fTheta_Y, stats, rawData] = CmAlphaEstimation(yMeas, rawCmAlpha, mode_estimator, mode_reality, ...
                                 covInflationSF, fPlot, controller, nWorkers);
 
+% CDF Differences
+gaussianPDF = normcdf(rawCmAlpha, stats.MMSE, stats.var^0.5);
+rmsePDF = sqrt(sum((fTheta_Y - gaussianPDF).^2));
+% TODO - could do KS test here?
+
+
+% hold on;
+% testCmAlpha = linspace(CmalphaMin, CmalphaMax, 10*nCmalpha);
+% gaussianPDF = normpdf(testCmAlpha, stats.MMSE, stats.var^0.5);
+% plot(testCmAlpha, gaussianPDF);
+% legend('Posterior','Gaussian Approximation of Posterior');
 
 %% Direct Bayes Approach - Cm_Alpha and D/Dt Cm_alpha (linear model)
-CmalphaMin = 1.05*constReality.aero.CM_alpha;
-CmalphaMax = 0.95*constReality.aero.CM_alpha;
+CmalphaMin = 1.2*constReality.aero.CM_alpha;
+CmalphaMax = 0.8*constReality.aero.CM_alpha;
 
 % Variables of interest
-nCmalpha = 100;
+nCmalpha = 500;
 rawCmAlpha = linspace(CmalphaMin, CmalphaMax, nCmalpha)';
 dCmAlpha = rawCmAlpha(2) - rawCmAlpha(1);
 
@@ -78,6 +89,11 @@ nWorkers = 10;
                                  rawTheta, 'linear-cmAlpha', mode_reality, ...
                                 covInflationSF, fPlot, controller, nWorkers,...
                                 integrationWeights, fPrior, thetaPaths);
+
+
+%% TODO - 2D testing
+gaussianPDF_2D = mvnpdf(rawTheta, stats_2D.MMSE', stats_2D.var);
+rmsePDF_2D = sqrt(sum((fTheta_Y_2D - gaussianPDF_2D).^2));
 
 %{
  TODO - could look at malhalanobis distance between true point and
